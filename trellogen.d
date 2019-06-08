@@ -1,0 +1,8842 @@
+@SILdoc(`Get information about an action
+Required Params:
+string      id                            The ID of the action
+
+Query Params:
+boolean     display                       
+boolean     entities                      
+string      fields                        'all' or a comma-separated list of action
+                                          [fields](ref:action-object)
+boolean     member                        
+string      member_fields                 'all' or a comma-separated list of member
+                                          [fields](ref:member-object)
+boolean     memberCreator                 Whether to include the member object for the creator of the
+                                          action
+string      memberCreator_fields          'all' or a comma-separated list of member
+                                          [fields](ref:member-object)
+
+`)
+auto action(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/actions/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get a specific property of an action
+Required Params:
+string      id                            The ID of the action
+string      field                         An action [field](ref:action-object)
+
+`)
+auto action(string id, string field)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/actions/%s/%s%s`(trelloAPIURL,id,field,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get the board for an action
+Required Params:
+string      id                            The ID of the action
+
+Query Params:
+string      fields                        'all' or a comma-separated list of board
+                                          [fields](ref:board-object)
+
+`)
+auto actionBoard(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/actions/%s/board%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get the card for an action
+Required Params:
+string      id                            The ID of the action
+
+Query Params:
+string      fields                        'all' or a comma-separated list of card
+                                          [fields](ref:card-object)
+
+`)
+auto actionCard(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/actions/%s/card%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get the display information for an action.
+Required Params:
+string      id                            The ID of the action
+
+`)
+auto actionDisplay(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/actions/%s/display%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get the list for an action
+Required Params:
+string      id                            The ID of the action
+
+Query Params:
+string      fields                        'all' or a comma-separated list of list
+                                          [fields](ref:list-object)
+
+`)
+auto actionList(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/actions/%s/list%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Gets the member of an action (not the creator)
+Required Params:
+string      id                            The ID of the action
+
+Query Params:
+string      fields                        'all' or a comma-separated list of member
+                                          [fields](ref:member-object)
+
+`)
+auto actionMember(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/actions/%s/member%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Gets the member who created the action
+Required Params:
+string      id                            The ID of the action
+
+Query Params:
+string      fields                        'all' or a comma-separated list of member
+                                          [fields](ref:member-object)
+
+`)
+auto actionMemberCreator(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/actions/%s/memberCreator%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get the organization of an action
+Required Params:
+string      id                            The ID of the action
+
+Query Params:
+string      fields                        'all' or a comma-separated list of organization
+                                          [fields](ref:organization-object)
+
+`)
+auto actionOrganization(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/actions/%s/organization%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update a comment action
+Required Params:
+string      id                            The ID of the action to update
+
+Query Params:
+string      text                          The new text for the comment
+
+`)
+auto setAction(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/actions/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update a comment action
+Required Params:
+string      id                            The ID of the action to update
+
+Query Params:
+string      value                         The new text for the comment
+
+`)
+auto setActionText(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/actions/%s/text%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Delete a comment action
+Required Params:
+string      id                            The ID of the commentCard action to delete
+
+`)
+auto deleteAction(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/actions/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Query Params:
+string      urls                          A list of API routes. Maximum of 10 routes allowed. The
+                                          routes should begin with a forward slash and should not
+                                          include the API version number - e.g.
+                                          "urls=/members/trello,/cards/[cardId]"
+
+`)
+auto batch(Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/batch%s`(trelloAPIURL,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Request a single board.
+Required Params:
+string      id                            
+
+Query Params:
+string      actions                       This is a nested resource. Read more about actions as nested
+                                          resources
+                                          [here](https://trello.readme.io/reference#actions-nested-resource).
+string      boardStars                    Valid values are one of: 'mine' or 'none'.
+string      cards                         This is a nested resource. Read more about cards as nested
+                                          resources
+                                          [here](https://trello.readme.io/reference#cards-nested-resource).
+boolean     card_pluginData               Use with the 'cards' param to include card pluginData with
+                                          the response
+string      checklists                    This is a nested resource. Read more about checklists as
+                                          nested resources
+                                          [here](https://trello.readme.io/reference#checklists-nested-resource).
+boolean     customFields                  This is a nested resource. Read more about custom fields as
+                                          nested resources [here](#custom-fields-nested-resource).
+string      fields                        The fields of the board to be included in the response.
+                                          Valid values: all or a comma-separated list of: closed,
+                                          dateLastActivity, dateLastView, desc, descData,
+                                          idOrganization, invitations, invited, labelNames,
+                                          memberships, name, pinned, powerUps, prefs, shortLink,
+                                          shortUrl, starred, subscribed, url
+string      labels                        This is a nested resource. Read more about labels as nested
+                                          resources
+                                          [here](https://trello.readme.io/reference#labels-nested-resource).
+string      lists                         This is a nested resource. Read more about lists as nested
+                                          resources
+                                          [here](https://trello.readme.io/reference#lists-nested-resource).
+string      members                       This is a nested resource. Read more about members as nested
+                                          resources
+                                          [here](https://trello.readme.io/reference#members-nested-resource).
+string      memberships                   This is a nested resource. Read more about memberships as
+                                          nested resources
+                                          [here](https://trello.readme.io/reference#memberships-nested-resource).
+string      membersInvited                Returns a list of member objects representing members who
+                                          been invited to be a member of the board. One of: admins,
+                                          all, none, normal, owners
+string      membersInvited_fields         The member fields to be included in the membersInvited
+                                          response. Valid values: all or a comma-separated list of:
+                                          avatarHash, bio, bioData, confirmed, fullName,
+                                          idPremOrgsAdmin, initials, memberType, products, status,
+                                          url, username
+boolean     pluginData                    Determines whether the pluginData for this board should be
+                                          returned. Valid values: true or false.
+boolean     organization                  This is a nested resource. Read more about organizations as
+                                          nested resources
+                                          [here](https://trello.readme.io/reference#organization-nested-resource).
+boolean     organization_pluginData       Use with the 'organization' param to include organization
+                                          pluginData with the response
+boolean     myPrefs                       
+boolean     tags                          Also known as collections, tags, refer to the collection(s)
+                                          that a Board belongs to.
+
+`)
+auto board(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            The ID of the board.
+string      field                         The field you'd like to receive. Valid values: closed,
+                                          dateLastActivity, dateLastView, desc, descData,
+                                          idOrganization, invitations, invited, labelNames,
+                                          memberships, name, pinned, powerUps, prefs, shortLink,
+                                          shortUrl, starred, subscribed, url.
+
+`)
+auto board(string id, string field)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/%s%s`(trelloAPIURL,id,field,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      boardId                       
+
+`)
+auto boardActions(string boardId)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/actions%s`(trelloAPIURL,boardId,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get the enabled Power-Ups on a board
+Required Params:
+string      id                            The ID of the board
+
+`)
+auto boardBoardPlugins(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/boardPlugins%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      boardId                       
+
+Optional Params:
+string      filter                        Valid values: mine, none
+
+`)
+auto boardBoardStars(string boardId, string filter = null)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/boardStars%s`(trelloAPIURL,boardId,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Fetch open cards on a board
+Required Params:
+string      id                            
+
+`)
+auto boardCards(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/cards%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      boardId                       
+string      filter                        Valid Values: all, closed, none, open, visible.
+
+`)
+auto boardCard(string boardId, string filter)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/cards/%s%s`(trelloAPIURL,boardId,filter,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            The ID of the board
+string      idCard                        The id the card to retrieve.
+
+`)
+auto boardCard(string id, string idCard)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/cards/%s%s`(trelloAPIURL,id,idCard,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            The ID of the board
+
+`)
+auto boardChecklists(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/checklists%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get the Custom Field Definitions that exist on a board.
+Required Params:
+string      id                            The ID of the board
+
+`)
+auto boardCustomFields(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/customFields%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            The ID of the board
+
+Query Params:
+string      fields                        'all' or a comma-separated list of label
+                                          [fields](#label-object)
+int         limit                         0 to 1000
+
+`)
+auto boardLabels(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/labels%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            The ID of the board
+
+Query Params:
+string      cards                         One of: 'all', 'closed', 'none', 'open'
+string      card_fields                   'all' or a comma-separated list of card
+                                          [fields](#card-object)
+string      filter                        One of 'all', 'closed', 'none', 'open'
+string      fields                        'all' or a comma-separated list of list
+                                          [fields](#list-object)
+
+`)
+auto boardLists(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/lists%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            The ID of the board
+string      filter                        One of 'all', 'closed', 'none', 'open'
+
+`)
+auto boardList(string id, string filter)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/lists/%s%s`(trelloAPIURL,id,filter,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get the members for a board
+Required Params:
+string      id                            The ID of the board
+
+`)
+auto boardMembers(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/members%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get information about the memberships users have to the board.
+Required Params:
+string      id                            The ID of the board
+
+Query Params:
+string      filter                        One of 'admins', 'all', 'none', 'normal'
+boolean     activity                      Works for premium organizations only.
+boolean     orgMemberType                 Shows the type of member to the org the user is. For
+                                          instance, an org admin will have a 'orgMemberType' of
+                                          'admin'.
+boolean     member                        Determines whether to include a nester member object.
+string      member_fields                 Fields to show if 'member=true'. Valid values: [nested
+                                          member resource
+                                          fields](https://developers.trello.com/v1.0/reference#members-nested-resource).
+
+`)
+auto boardMemberships(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/memberships%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`List the Power-Ups for a board
+Required Params:
+string      id                            The ID of the board
+
+Query Params:
+string      filter                        One of: 'enabled' or 'available'
+
+`)
+auto boardPlugins(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/plugins%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update an existing board by id
+Required Params:
+string      id                            The id of the board to update
+
+Query Params:
+string      name                          The new name for the board. 1 to 16384 characters long.
+string      desc                          A new description for the board, 0 to 16384 characters long
+boolean     closed                        Whether the board is closed
+boolean     subscribed                    Whether the acting user is subscribed to the board
+string      idOrganization                The id of the team the board should be moved to
+string      prefs_permissionLevel         One of: org, private, public
+boolean     prefs_selfJoin                Whether team members can join the board themselves
+boolean     prefs_cardCovers              Whether card covers should be displayed on this board
+boolean     prefs_hideVotes               Determines whether the Voting Power-Up should hide who voted
+                                          on cards or not.
+string      prefs_invitations             Who can invite people to this board. One of: admins,
+                                          members
+string      prefs_voting                  Who can vote on this board. One of disabled, members,
+                                          observers, org, public
+string      prefs_comments                Who can comment on cards on this board. One of: disabled,
+                                          members, observers, org, public
+string      prefs_background              The id of a custom background or one of: blue, orange,
+                                          green, red, purple, pink, lime, sky, grey
+string      prefs_cardAging               One of: pirate, regular
+boolean     prefs_calendarFeedEnabled     Determines whether the calendar feed is enabled or not.
+string      labelNames_green              Name for the green label. 1 to 16384 characters long
+string      labelNames_yellow             Name for the yellow label. 1 to 16384 characters long
+string      labelNames_orange             Name for the orange label. 1 to 16384 characters long
+string      labelNames_red                Name for the red label. 1 to 16384 characters long
+string      labelNames_purple             Name for the purple label. 1 to 16384 characters long
+string      labelNames_blue               Name for the blue label. 1 to 16384 characters long
+
+`)
+auto setBoard(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update an existing board by id
+Required Params:
+string      id                            The id of the board to update
+string      type                          Valid values: admin, normal, observer. Determines what type
+                                          of member the user being added should be of the board.
+
+Optional Params:
+string      fullName                      The full name of the user to as a member of the board. Must
+                                          have a length of at least 1 and cannot begin nor end with a
+                                          space.
+
+Query Params:
+string      email                         The email address of a user to add as a member of the
+                                          board.
+
+`)
+auto setBoardMembers(string id, string type, string fullName = null, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/members%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Add a member to the board.
+Required Params:
+string      id                            The id of the board to update
+string      idMember                      The id of the member to add to the board.
+
+Query Params:
+string      type                          One of: admin, normal, observer. Determines the type of
+                                          member this user will be on the board.
+boolean     allowBillableGuest            Optional param that allows organization admins to add
+                                          multi-board guests onto a board.
+
+`)
+auto setBoardMember(string id, string idMember, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/members/%s%s`(trelloAPIURL,id,idMember,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update an existing board by id
+Required Params:
+string      id                            The id of the board to update
+
+Query Params:
+string      idMembership                  The id of a membership that should be added to this board.
+string      type                          One of: admin, normal, observer. Determines the type of
+                                          member that this membership will be to this board.
+string      member_fields                 Valid values: all, avatarHash, bio, bioData, confirmed,
+                                          fullName, idPremOrgsAdmin, initials, memberType, products,
+                                          status, url, username
+
+`)
+auto setBoardMembership(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/memberships/%s%s`(trelloAPIURL,id,idMembership,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update an existing board by id
+Required Params:
+string      id                            The id of the board to update
+
+Query Params:
+string      value                         Valid values: bottom, top. Determines the position of the
+                                          email address.
+
+`)
+auto setBoardMyPrefsEmailPosition(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/myPrefs/emailPosition%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update an existing board by id
+Required Params:
+string      id                            The id of the board to update
+
+Query Params:
+string      value                         The id of an email list.
+
+`)
+auto setBoardMyPrefsIdEmailList(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/myPrefs/idEmailList%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update an existing board by id
+Required Params:
+string      id                            The id of the board to update
+
+Query Params:
+boolean     value                         Determines whether to show the list guide.
+
+`)
+auto setBoardMyPrefsShowListGuide(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/myPrefs/showListGuide%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update an existing board by id
+Required Params:
+string      id                            The id of the board to update
+
+Query Params:
+boolean     value                         Determines whether to show the side bar.
+
+`)
+auto setBoardMyPrefsShowSidebar(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/myPrefs/showSidebar%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update an existing board by id
+Required Params:
+string      id                            The id of the board to update
+
+Query Params:
+boolean     value                         Determines whether to show sidebar activity.
+
+`)
+auto setBoardMyPrefsShowSidebarActivity(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/myPrefs/showSidebarActivity%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update an existing board by id
+Required Params:
+string      id                            The id of the board to update
+
+Query Params:
+boolean     value                         Determines whether to show the sidebar board actions.
+
+`)
+auto setBoardMyPrefsShowSidebarBoardActions(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/myPrefs/showSidebarBoardActions%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update an existing board by id
+Required Params:
+string      id                            The id of the board to update
+
+Query Params:
+boolean     value                         Determines whether to show members of the board in the
+                                          sidebar.
+
+`)
+auto setBoardMyPrefsShowSidebarMembers(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/myPrefs/showSidebarMembers%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Create a new board.
+Query Params:
+string      name                          The new name for the board. 1 to 16384 characters long.
+boolean     defaultLabels                 Determines whether to use the default set of labels.
+boolean     defaultLists                  Determines whether to add the default set of lists to a
+                                          board (To Do, Doing, Done). It is ignored if 'idBoardSource'
+                                          is provided.
+string      desc                          A new description for the board, 0 to 16384 characters long
+string      idOrganization                The id or name of the team the board should belong to.
+string      idBoardSource                 The id of a board to copy into the new board.
+string      keepFromSource                To keep cards from the original board pass in the value
+                                          'cards'
+string      powerUps                      The Power-Ups that should be enabled on the new board. One
+                                          of: 'all', 'calendar', 'cardAging', 'recap', 'voting'.
+string      prefs_permissionLevel         The permissions level of the board. One of: 'org',
+                                          'private', 'public'.
+string      prefs_voting                  Who can vote on this board. One of 'disabled', 'members',
+                                          'observers', 'org', 'public'.
+string      prefs_comments                Who can comment on cards on this board. One of: 'disabled',
+                                          'members', 'observers', 'org', 'public'.
+string      prefs_invitations             Determines what types of members can invite users to join.
+                                          One of: 'admins', 'members'.
+boolean     prefs_selfJoin                Determines whether users can join the boards themselves or
+                                          whether they have to be invited.
+boolean     prefs_cardCovers              Determines whether card covers are enabled.
+string      prefs_background              The id of a custom background or one of: 'blue', 'orange',
+                                          'green', 'red', 'purple', 'pink', 'lime', 'sky', 'grey'.
+string      prefs_cardAging               Determines the type of card aging that should take place on
+                                          the board if card aging is enabled. One of: 'pirate',
+                                          'regular'.
+
+`)
+auto setBoards(Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s`(trelloAPIURL,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Enable a Power-Up on a board
+Required Params:
+string      id                            The ID of the board
+
+Query Params:
+string      idPlugin                      The ID of the Power-Up to enable
+
+`)
+auto setBoardBoardPlugins(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/boardPlugins%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Create a new board.
+Required Params:
+string      id                            The id of the board to update
+
+`)
+auto setBoardCalendarKeyGenerate(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/calendarKey/generate%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            The id of the board to update
+
+`)
+auto setBoardEmailKeyGenerate(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/emailKey/generate%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            The id of the board to update
+
+Query Params:
+string      value                         The id of a tag from the organization to which this board
+                                          belongs.
+
+`)
+auto setBoardIdTags(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/idTags%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            The id of the board to update
+
+Query Params:
+string      name                          The name of the label to be created. 1 to 16384 characters
+                                          long.
+string      color                         Sets the color of the new label. Valid values are a label
+                                          color or 'null'.
+
+`)
+auto setBoardLabels(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/labels%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            The id of the board to update
+
+Query Params:
+string      name                          The name of the list to be created. 1 to 16384 characters
+                                          long.
+string      pos                           Determines the position of the list. Valid values: 'top',
+                                          'bottom', or a positive number.
+
+`)
+auto setBoardLists(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/lists%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            The id of the board to update
+
+`)
+auto setBoardMarkedAsViewed(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/markedAsViewed%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            The id of the board to update
+
+Query Params:
+string      value                         The Power-Up to be enabled on the board. One of: 'calendar',
+                                          'cardAging', 'recap', 'voting'.
+
+`)
+auto setBoardPowerUps(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/powerUps%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Delete a board.
+Required Params:
+string      id                            The id of the board to delete
+
+`)
+auto deleteBoard(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Disable a Power-Up on a board
+Required Params:
+string      id                            The ID of the board
+string      idPlugin                      The ID of the Power-Up to disable
+
+`)
+auto deleteBoardBoardPlugin(string id, string idPlugin)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/boardPlugins/%s%s`(trelloAPIURL,id,idPlugin,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            The id of the board to update
+string      idMember                      The id, username, or organization name of the user to be
+                                          removed from the board.
+
+`)
+auto deleteBoardMember(string id, string idMember)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/members/%s%s`(trelloAPIURL,id,idMember,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            The id of the board to update
+string      powerUp                       The Power-Up to be enabled on the board. One of: 'calendar',
+                                          'cardAging', 'recap', 'voting'.
+
+`)
+auto deleteBoardPowerUp(string id, string powerUp)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/powerUps/%s%s`(trelloAPIURL,id,powerUp,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get a card by its ID
+Required Params:
+string      id                            The ID of the card
+
+Query Params:
+string      fields                        'all' or a comma-separated list of
+                                          [fields](ref:card-object). **Defaults**: 'badges,
+                                          checkItemStates, closed, dateLastActivity, desc, descData,
+                                          due, email, idBoard, idChecklists, idLabels, idList,
+                                          idMembers, idShort, idAttachmentCover,
+                                          manualCoverAttachment, labels, name, pos, shortUrl, url'
+string      actions                       See the [Actions Nested
+                                          Resource](ref:actions-nested-resource)
+string      attachments                   'true', 'false', or 'cover'
+string      attachment_fields             'all' or a comma-separated list of attachment
+                                          [fields](ref:attachments)
+boolean     members                       Whether to return member objects for members on the card
+string      member_fields                 'all' or a comma-separated list of member
+                                          [fields](ref:member-object). **Defaults**: 'avatarHash,
+                                          fullName, initials, username'
+boolean     membersVoted                  Whether to return member objects for members who voted on
+                                          the card
+string      memberVoted_fields            'all' or a comma-separated list of member
+                                          [fields](ref:member-object). **Defaults**: 'avatarHash,
+                                          fullName, initials, username'
+boolean     checkItemStates               
+string      checklists                    Whether to return the checklists on the card. 'all' or
+                                          'none'
+string      checklist_fields              'all' or a comma-separated list of
+                                          'idBoard,idCard,name,pos'
+boolean     board                         Whether to return the board object the card is on
+string      board_fields                  'all' or a comma-separated list of board
+                                          [fields](#board-object). **Defaults**: 'name, desc,
+                                          descData, closed, idOrganization, pinned, url, prefs'
+boolean     list                          See the [Lists Nested Resource](ref:lists-nested-resource)
+boolean     pluginData                    Whether to include pluginData on the card with the response
+boolean     stickers                      Whether to include sticker models with the response
+string      sticker_fields                'all' or a comma-separated list of sticker
+                                          [fields](ref:stickers)
+boolean     customFieldItems              Whether to include the customFieldItems
+
+`)
+auto card(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get a specific property of a card
+Required Params:
+string      id                            The id of the card
+string      field                         The desired field. One of [fields](ref:card-object)
+
+`)
+auto card(string id, string field)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/%s%s`(trelloAPIURL,id,field,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`List the actions on a card
+Required Params:
+string      id                            The ID of the card
+
+`)
+auto cardActions(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/actions%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`List the attachments on a card
+Required Params:
+string      id                            The ID of the card
+
+Optional Params:
+string      fields                        'all' or a comma-separated list of attachment
+                                          [fields](ref:attachments)
+string      filter                        Use 'cover' to restrict to just the cover attachment
+
+`)
+auto cardAttachments(string id, string fields = null, string filter = null)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/attachments%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get a specific attachment on a card
+Required Params:
+string      id                            The ID of the card
+string      idAttachment                  The ID of the attachment
+
+Query Params:
+string      fields                        'all' or a comma-separated list of attachment
+                                          [fields](ref:attachments)
+
+`)
+auto cardAttachment(string id, string idAttachment, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/attachments/%s%s`(trelloAPIURL,id,idAttachment,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get the board a card is on
+Required Params:
+string      id                            The ID of the card
+
+Query Params:
+string      fields                        'all' or a comma-separated list of board
+                                          [fields](#board-object)
+
+`)
+auto cardBoard(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/board%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get the completed checklist items on a card
+Required Params:
+string      id                            The ID of the card
+
+Query Params:
+string      fields                        'all' or a comma-separated list of: 'idCheckItem', 'state'
+
+`)
+auto cardCheckItemStates(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/checkItemStates%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get the checklists on a card
+Required Params:
+string      id                            The ID of the card
+
+Query Params:
+string      checkItems                    'all' or 'none'
+string      checkItem_fields              'all' or a comma-separated list of:
+                                          'name,nameData,pos,state,type'
+string      filter                        'all' or 'none'
+string      fields                        'all' or a comma-separated list of:
+                                          'idBoard,idCard,name,pos'
+
+`)
+auto cardChecklists(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/checklists%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get a specific checkItem on a card
+Required Params:
+string      id                            The ID of the card
+string      idCheckItem                   The ID of the checkitem
+
+Query Params:
+string      fields                        'all' or a comma-separated list of
+                                          'name,nameData,pos,state,type'
+
+`)
+auto cardCheckItem(string id, string idCheckItem, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/checkItem/%s%s`(trelloAPIURL,id,idCheckItem,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get the custom field items for a card.
+Required Params:
+string      id                            The ID of the card
+
+`)
+auto cardCustomFieldItems(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/customFieldItems%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get the list a card is in
+Required Params:
+string      id                            The ID of the card
+
+Query Params:
+string      fields                        'all' or a comma-separated list of list
+                                          [fields](ref:list-object)
+
+`)
+auto cardList(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/list%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get the members on a card
+Required Params:
+string      id                            The ID of the card
+
+Query Params:
+string      fields                        'all' or a comma-separated list of member
+                                          [fields](ref:member-object)
+
+`)
+auto cardMembers(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/members%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get the members who have voted on a card
+Required Params:
+string      id                            The ID of the card
+
+Query Params:
+string      fields                        'all' or a comma-separated list of member
+                                          [fields](ref:member-object)
+
+`)
+auto cardMembersVoted(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/membersVoted%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get any shared pluginData on a card
+Required Params:
+string      id                            The ID of the card
+
+`)
+auto cardPluginData(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/pluginData%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get the stickers on a card
+Required Params:
+string      id                            The ID of the card
+
+Query Params:
+string      fields                        'all' or a comma-separated list of sticker
+                                          [fields](ref:stickers)
+
+`)
+auto cardStickers(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/stickers%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get a specific sticker on a card
+Required Params:
+string      id                            The ID of the card
+string      idSticker                     The ID of the sticker
+
+Query Params:
+string      fields                        'all' or a comma-separated list of sticker
+                                          [fields](ref:stickers)
+
+`)
+auto cardSticker(string id, string idSticker, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/stickers/%s%s`(trelloAPIURL,id,idSticker,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update a card
+Required Params:
+string      id                            The ID of the card to update
+
+Query Params:
+string      name                          The new name for the card
+string      desc                          The new description for the card
+boolean     closed                        Whether the card should be archived (closed: true)
+string      idMembers                     Comma-separated list of member IDs
+string      idAttachmentCover             The ID of the image attachment the card should use as its
+                                          cover, or null for none
+string      idList                        The ID of the list the card should be in
+string      idLabels                      Comma-separated list of label IDs
+string      idBoard                       The ID of the board the card should be on
+string      pos                           The position of the card in its list. 'top', 'bottom', or a
+                                          positive float
+datetime    due                           When the card is due, or 'null'
+boolean     dueComplete                   Whether the due date should be marked complete
+boolean     subscribed                    Whether the member is should be subscribed to the card
+
+`)
+auto setCard(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update an existing comment
+Required Params:
+string      id                            The ID of the card
+string      idAction                      The ID of the comment action to update
+
+Query Params:
+string      text                          The new text for the comment
+
+`)
+auto setCardActionComments(string id, string idAction, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/actions/%s/comments%s`(trelloAPIURL,id,idAction,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update an item in a checklist on a card.
+Required Params:
+string      id                            The ID of the card
+string      idCheckItem                   The ID of the checklist item to update
+
+Query Params:
+string      name                          The new name for the checklist item
+string      state                         One of: 'complete', 'incomplete'
+string      idChecklist                   The ID of the checklist this item is in
+string      pos                           'top', 'bottom', or a positive float
+
+`)
+auto setCardCheckItem(string id, string idCheckItem, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/checkItem/%s%s`(trelloAPIURL,id,idCheckItem,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update an item in a checklist on a card.
+Required Params:
+string      idCard                        The ID of the card
+string      idCheckItem                   The ID of the checklist item to update
+string      idChecklist                   The ID of the item to update.
+
+Query Params:
+string      pos                           'top', 'bottom', or a positive float
+
+`)
+auto setCardChecklistCheckItem(string idCard, string idCheckItem, string idChecklist, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/checklist/%s/checkItem/%s%s`(trelloAPIURL,idCard,idChecklist,idCheckItem,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update a sticker on a card
+Required Params:
+string      id                            The ID of the card
+string      idSticker                     The ID of the sticker to update
+
+Query Params:
+float       top                           
+float       left                          
+int         zIndex                        
+float       rotate                        
+
+`)
+auto setCardSticker(string id, string idSticker, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/stickers/%s%s`(trelloAPIURL,id,idSticker,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Create a new card
+Query Params:
+string      name                          The name for the card
+string      desc                          The description for the card
+string      pos                           The position of the new card. 'top', 'bottom', or a positive
+                                          float
+datetime    due                           A due date for the card
+boolean     dueComplete                   
+string      idList                        The ID of the list the card should be created in
+string      idMembers                     Comma-separated list of member IDs to add to the card
+string      idLabels                      Comma-separated list of label IDs to add to the card
+string      urlSource                     A URL starting with 'http://' or 'https://'
+file        fileSource                    
+string      idCardSource                  The ID of a card to copy into the new card
+string      keepFromSource                If using 'idCardSource' you can specify which properties to
+                                          copy over. 'all' or comma-separated list of:
+                                          'attachments,checklists,comments,due,labels,members,stickers'
+
+`)
+auto setCards(Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards%s`(trelloAPIURL,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Add a new comment to a card
+Required Params:
+string      id                            The ID of the card
+
+Query Params:
+string      text                          The comment
+
+`)
+auto setCardActionsComments(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/actions/comments%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Add an attachment to a card
+Required Params:
+string      id                            The ID of the card
+
+Query Params:
+string      name                          The name of the attachment. Max length 256.
+file        file                          The file to attach, as multipart/form-data
+string      mimeType                      The mimeType of the attachment. Max length 256
+string      url                           A URL to attach. Must start with 'http://' or 'https://'
+
+`)
+auto setCardAttachments(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/attachments%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Create a new checklist on a card
+Required Params:
+string      id                            The ID of the card
+
+Query Params:
+string      name                          The name of the checklist
+string      idChecklistSource             The ID of a source checklist to copy into the new one
+string      pos                           The position of the checklist on the card. One of: 'top',
+                                          'bottom', or a positive number.
+
+`)
+auto setCardChecklists(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/checklists%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Add a label to a card
+Required Params:
+string      id                            The ID of the card
+
+Query Params:
+string      value                         The ID of the label to add
+
+`)
+auto setCardIdLabels(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/idLabels%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Add a member to a card
+Required Params:
+string      id                            The ID of the card
+
+Query Params:
+string      value                         The ID of the member to add to the card
+
+`)
+auto setCardIdMembers(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/idMembers%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Add a new label to a card
+Required Params:
+string      id                            The ID of the card
+
+Query Params:
+string      color                         A valid label color or 'null'. See
+                                          [labels](ref:label-object)
+string      name                          A name for the label
+
+`)
+auto setCardLabels(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/labels%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Mark notifications about this card as read
+Required Params:
+string      id                            The ID of the card
+
+`)
+auto setCardMarkAssociatedNotificationsRead(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/markAssociatedNotificationsRead%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Vote on the card
+Required Params:
+string      id                            The ID of the card
+
+Query Params:
+string      value                         The ID of the member to vote 'yes' on the card
+
+`)
+auto setCardMembersVoted(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/membersVoted%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Add a sticker to a card
+Required Params:
+string      id                            The ID of the card
+
+Query Params:
+string      image                         For custom stickers, the id of the sticker. For default
+                                          stickers, the string identifier (like 'taco-cool', see
+                                          below)
+float       top                           The top position of the sticker, from -60 to 100
+float       left                          The left position of the sticker, from -60 to 100
+int         zIndex                        The z-index of the sticker
+float       rotate                        The rotation of the sticker
+
+`)
+auto setCardStickers(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/stickers%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Delete a card
+Required Params:
+string      id                            The ID of the card
+
+`)
+auto deleteCard(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Delete a comment
+Required Params:
+string      id                            The ID of the card
+string      idAction                      The ID of the comment action
+
+`)
+auto deleteCardActionComments(string id, string idAction)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/actions/%s/comments%s`(trelloAPIURL,id,idAction,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Delete an attachment
+Required Params:
+string      id                            The ID of the card
+string      idAttachment                  The ID of the attachment to delete
+
+`)
+auto deleteCardAttachment(string id, string idAttachment)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/attachments/%s%s`(trelloAPIURL,id,idAttachment,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Delete a checklist item
+Required Params:
+string      id                            The ID of the card
+string      idCheckItem                   The ID of the checklist item to delete
+
+`)
+auto deleteCardCheckItem(string id, string idCheckItem)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/checkItem/%s%s`(trelloAPIURL,id,idCheckItem,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Delete a checklist from a card
+Required Params:
+string      id                            The ID of the card
+string      idChecklist                   The ID of the checklist to delete
+
+`)
+auto deleteCardChecklist(string id, string idChecklist)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/checklists/%s%s`(trelloAPIURL,id,idChecklist,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Remove a label from a card
+Required Params:
+string      id                            The ID of the card
+string      idLabel                       The ID of the label to remove
+
+`)
+auto deleteCardIdLabel(string id, string idLabel)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/idLabels/%s%s`(trelloAPIURL,id,idLabel,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Remove a member from a card
+Required Params:
+string      id                            The ID of the card
+string      idMember                      The ID of the member to remove from the card
+
+`)
+auto deleteCardIdMember(string id, string idMember)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/idMembers/%s%s`(trelloAPIURL,id,idMember,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Remove a member's vote from a card
+Required Params:
+string      id                            The ID of the card
+string      idMember                      The ID of the member whose vote to remove
+
+`)
+auto deleteCardMembersVoted(string id, string idMember)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/membersVoted/%s%s`(trelloAPIURL,id,idMember,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Remove a sticker from the card
+Required Params:
+string      id                            The ID of the card
+string      idSticker                     The ID of the sticker to remove from the card
+
+`)
+auto deleteCardSticker(string id, string idSticker)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/cards/%s/stickers/%s%s`(trelloAPIURL,id,idSticker,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            ID of a checklist.
+
+Query Params:
+string      cards                         Valid values: 'all', 'closed', 'none', 'open', 'visible'.
+                                          Cards is a nested resource. The additional query params
+                                          available are documented at [Cards Nested
+                                          Resource](ref:cards-nested-resource).
+string      checkItems                    The check items on the list to return. One of: 'all',
+                                          'none'.
+string      checkItem_fields              The fields on the checkItem to return if checkItems are
+                                          being returned. 'all' or a comma-separated list of: 'name',
+                                          'nameData', 'pos', 'state', 'type'
+string      fields                        'all' or a comma-separated list of checklist
+                                          [fields](ref:checklist-object)
+
+`)
+auto checklist(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/checklists/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            ID of a checklist.
+string      field                         A checklist [field](ref:checklist-object)
+
+`)
+auto checklist(string id, string field)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/checklists/%s/%s%s`(trelloAPIURL,id,field,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            ID of a checklist.
+
+Query Params:
+string      fields                        'all' or a comma-separated list of board
+                                          [fields](ref:board-object)
+
+`)
+auto checklistBoard(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/checklists/%s/board%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            ID of a checklist.
+
+`)
+auto checklistCards(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/checklists/%s/cards%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            ID of a checklist.
+
+Query Params:
+string      filter                        One of: 'all', 'none'.
+string      fields                        One of: 'all', 'name', 'nameData', 'pos', 'state', 'type'.
+
+`)
+auto checklistCheckItems(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/checklists/%s/checkItems%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            ID of a checklist.
+string      idCheckItem                   ID of the check item to retrieve.
+
+Query Params:
+string      fields                        One of: 'all', 'name', 'nameData', 'pos', 'state', 'type'.
+
+`)
+auto checklistCheckItem(string id, string idCheckItem, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/checklists/%s/checkItems/%s%s`(trelloAPIURL,id,idCheckItem,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update an existing checklist.
+Required Params:
+string      id                            ID of a checklist.
+
+Query Params:
+string      name                          Name of the new checklist being created. Should be length of
+                                          1 to 16384.
+string      pos                           Determines the position of the checklist on the card. One
+                                          of: 'top', 'bottom', or a positive number.
+
+`)
+auto setChecklist(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/checklists/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            ID of a checklist.
+
+Query Params:
+string      value                         The value to change the checklist name to. Should be a
+                                          string of length 1 to 16384.
+
+`)
+auto setChecklistName(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/checklists/%s/name%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Query Params:
+string      idCard                        The ID of the card that the checklist should be added to.
+string      name                          The name of the checklist. Should be a string of length 1 to
+                                          16384.
+string      pos                           The position of the checklist on the card. One of: 'top',
+                                          'bottom', or a positive number.
+string      idChecklistSource             The ID of a checklist to copy into the new checklist.
+
+`)
+auto setChecklists(Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/checklists%s`(trelloAPIURL,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            ID of a checklist.
+
+Query Params:
+string      name                          The name of the new check item on the checklist. Should be a
+                                          string of length 1 to 16384.
+string      pos                           The position of the check item in the checklist. One of:
+                                          'top', 'bottom', or a positive number.
+boolean     checked                       Determines whether the check item is already checked when
+                                          created.
+
+`)
+auto setChecklistCheckItems(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/checklists/%s/checkItems%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Delete a checklist
+Required Params:
+string      id                            ID of a checklist.
+
+`)
+auto deleteChecklist(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/checklists/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Remove an item from a checklist
+Required Params:
+string      id                            ID of a checklist.
+string      idCheckItem                   ID of the checklist item to delete.
+
+`)
+auto deleteChecklistCheckItem(string id, string idCheckItem)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/checklists/%s/checkItems/%s%s`(trelloAPIURL,id,idCheckItem,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            ID of the customfield to retrieve.
+
+`)
+auto custom_fields_object(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/customfields/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            ID of the customfield to retrieve.
+
+`)
+auto customfield(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/customfields/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update a Custom Field definition.
+Required Params:
+string      id                            ID of the customfield to update.
+
+Optional Params:
+string      name                          The name of the Custom Field
+float       pos                           New position for the custom field. Can also be 'top' or
+                                          'bottom'
+boolean     display_cardFront             Whether to display this custom field on the front of cards
+
+`)
+auto setCustomfield(string id, string name = null, double pos = double.nan, bool display_cardFront = false)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/customfields/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Create a new Custom Field on a board.
+Required Params:
+string      idModel                       The ID of the model for which the Custom Field is being
+                                          defined. This should always be the ID of a board.
+string      modelType                     The type of model that the Custom Field is being defined on.
+                                          This should always be 'board'.
+string      name                          
+string      type                          
+string      pos                           
+
+Optional Params:
+string      options                       
+boolean     display_cardFront             Whether this custom field should be shown on the front of
+                                          cards
+
+`)
+auto setCustomFields(string idModel, string modelType, string name, string type, string pos, string options = null, bool display_cardFront = false)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/customFields%s`(trelloAPIURL,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Delete a Custom Field from a board.
+Required Params:
+string      id                            ID of the customfield to delete.
+
+`)
+auto deleteCustomfield(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/customfields/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get the options of a drop down Custom Field
+Required Params:
+string      id                            ID of the customfield.
+
+`)
+auto customFieldOptions(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/customFields/%s/options%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            ID of the customfielditem.
+string      idCustomFieldOption           ID of the customfieldoption to retrieve.
+
+`)
+auto customFieldOption(string id, string idCustomFieldOption)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/customFields/%s/options/%s%s`(trelloAPIURL,id,idCustomFieldOption,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Add an option to a dropdown Custom Field
+Required Params:
+string      id                            ID of the customfield.
+
+`)
+auto setCustomFieldOptions(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/customFields/%s/options%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Delete an option from a Custom Field dropdown.
+Required Params:
+string      id                            ID of the customfielditem.
+string      idCustomFieldOption           ID of the customfieldoption to delete.
+
+`)
+auto deleteCustomfieldOption(string id, string idCustomFieldOption)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/customfields/%s/options/%s%s`(trelloAPIURL,id,idCustomFieldOption,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Setting, updating, and removing the value for a Custom Field on a card.
+Required Params:
+string      idCard                        ID of the card that the Custom Field value should be
+                                          set/updated for
+string      idCustomField                 ID of the Custom Field on the card.
+object      value                         An object containing the key and value to set for the card's
+                                          Custom Field value. The key used to set the value should
+                                          match the type of Custom Field defined.
+
+`)
+auto setCardCustomFieldItem(string idCard, string idCustomField, Variable[string] value)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/card/%s/customField/%s/item%s`(trelloAPIURL,idCard,idCustomField,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get the Custom Field Definitions that exist on a board.
+Required Params:
+string      id                            The ID of the board
+
+`)
+auto boardCustomFields(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/boards/%s/customFields%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get an enterprise by its ID.
+Required Params:
+string      id                            ID of the enterprise to retrieve.
+
+Query Params:
+string      fields                        Comma-separated list of: 'id', 'name', 'displayName',
+                                          'prefs', 'ssoActivationFailed', 'idAdmins', 'idMembers'
+                                          (Note that the members array returned will be paginated if
+                                          'members' is 'normal' or 'admins'. Pagination can be
+                                          controlled with member_startIndex, etc, but the API response
+                                          will not contain the total available result count or
+                                          pagination status data. Read the SCIM documentation [here]()
+                                          for more information on filtering), 'idOrganizations',
+                                          'products', 'userTypes', 'idMembers', 'idOrganizations'
+string      members                       One of: 'none', 'normal', 'admins', 'owners', 'all'
+string      member_fields                 One of: 'avatarHash', 'fullName', 'initials', 'username'
+string      member_filter                 Pass a [SCIM-style
+                                          query](https://developers.trello.com/v1.0/reference#section-parameters)
+                                          to filter members. This takes precedence over the
+                                          all/normal/admins value of members. If any of the member_*
+                                          args are set, the member array will be paginated.
+string      member_sort                   This parameter expects a
+                                          [SCIM-style](https://developers.trello.com/v1.0/reference#section-parameters)
+                                          sorting value prefixed by a '-' to sort descending. If no
+                                          '-' is prefixed, it will be sorted ascending. Note that the
+                                          members array returned will be paginated if 'members' is
+                                          'normal' or 'admins'. Pagination can be controlled with
+                                          member_startIndex, etc, but the API response will not
+                                          contain the total available result count or pagination
+                                          status data.
+string      member_sortBy                 Deprecated: Please use member_sort. This parameter expects a
+                                          [SCIM-style sorting
+                                          value](https://developers.trello.com/v1.0/reference#section-parameters).
+                                          Note that the members array returned will be paginated if
+                                          'members' is 'normal' or 'admins'. Pagination can be
+                                          controlled with 'member_startIndex', etc, and the API
+                                          response's header will contain the total count and
+                                          pagination state.
+string      member_sortOrder              Deprecated: Please use member_sort. One of: 'ascending',
+                                          'descending', 'asc', 'desc'
+int         member_startIndex             Any integer between 0 and 100.
+int         member_count                  0 to 100
+string      organizations                 One of: 'none', 'members', 'public', 'all'
+string      organization_fields           Any valid value that the [nested organization field
+                                          resource]() accepts.
+boolean     organization_paid_accounts    
+string      organization_memberships      Comma-seperated list of: 'me', 'normal', 'admin', 'active',
+                                          'deactivated'
+
+`)
+auto enterprise(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/enterprises/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get an enterprise's admin members.
+Required Params:
+string      id                            ID of the enterprise to retrieve.
+
+Query Params:
+string      fields                        Any valid value that the [nested member field resource]()
+                                          accepts.
+
+`)
+auto enterpriseAdmins(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/enterprises/%s/admins%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get the signup URL for an enterprise.
+Required Params:
+string      id                            ID of the enterprise to retrieve.
+
+Query Params:
+boolean     authenticate                  
+boolean     confirmationAccepted          
+string      returnUrl                     Any valid URL.
+boolean     tosAccepted                   Designates whether the user has seen/consented to the Trello
+                                          ToS prior to being redirected to the enterprise signup
+                                          page/their IdP.
+
+`)
+auto enterpriseSignupUrl(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/enterprises/%s/signupUrl%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get the members of an enterprise.
+Required Params:
+string      id                            ID of the enterprise to retrieve.
+
+Query Params:
+string      fields                        A comma-seperated list of valid [member fields](member).
+string      filter                        Pass a [SCIM-style
+                                          query](https://developers.trello.com/v1.0/reference#section-parameters)
+                                          to filter members. This takes precedence over the
+                                          all/normal/admins value of members. If any of the below
+                                          member_* args are set, the member array will be paginated.
+string      sort                          This parameter expects a
+                                          [SCIM-style](https://developers.trello.com/v1.0/reference#section-parameters)
+                                          sorting value prefixed by a '-' to sort descending. If no
+                                          '-' is prefixed, it will be sorted ascending. Note that the
+                                          members array returned will be paginated if 'members' is
+                                          'normal' or 'admins'. Pagination can be controlled with
+                                          member_startIndex, etc, but the API response will not
+                                          contain the total available result count or pagination
+                                          status data.
+string      sortBy                        Deprecated: Please use 'sort' instead. This parameter
+                                          expects a
+                                          [SCIM-style](https://developers.trello.com/v1.0/reference#section-parameters)
+                                          sorting value. Note that the members array returned will be
+                                          paginated if 'members' is 'normal' or 'admins'. Pagination
+                                          can be controlled with member_startIndex, etc, but the API
+                                          response will not contain the total available result count
+                                          or pagination status data.
+string      sortOrder                     Deprecated: Please use 'sort' instead. One of: 'ascending',
+                                          'descending', 'asc', 'desc'.
+int         startIndex                    Any integer between 0 and 9999.
+string      count                         [SCIM-style
+                                          filter](https://developers.trello.com/v1.0/reference#section-parameters).
+string      organization_fields           Any valid value that the [nested organization field
+                                          resource](https://developers.trello.com/v1.0/reference#organizations-nested-resource)
+                                          accepts.
+string      board_fields                  Any valid value that the [nested board
+                                          resource](https://developers.trello.com/v1.0/reference#boards-nested-resource)
+                                          accepts.
+
+`)
+auto enterpriseMembers(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/enterprises/%s/members%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get a specific member of an enterprise by ID.
+Required Params:
+string      id                            ID of the enterprise to retrieve.
+
+Query Params:
+string      idMember                      An ID of a member resource.
+string      fields                        A comma separated list of any valid values that the [nested
+                                          member field resource]() accepts.
+string      organization_fields           Any valid value that the [nested organization field
+                                          resource](https://developers.trello.com/v1.0/reference#organizations-nested-resource)
+                                          accepts.
+string      board_fields                  Any valid value that the [nested board
+                                          resource](https://developers.trello.com/v1.0/reference#boards-nested-resource)
+                                          accepts.
+
+`)
+auto enterpriseMember(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/enterprises/%s/members/%s%s`(trelloAPIURL,id,idMember,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get whether an organization can be transferred to an enterprise.
+Required Params:
+string      id                            ID of the enterprise to retrieve.
+string      idOrganization                An ID of an Organization resource.
+
+`)
+auto enterpriseTransferrableOrganization(string id, string idOrganization)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/enterprises/%s/transferrable/organization/%s%s`(trelloAPIURL,id,idOrganization,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Deactivate a member of an enterprise.
+Required Params:
+string      id                            ID of the enterprise to retrieve.
+string      idMember                      ID of the member to deactive.
+
+Query Params:
+boolean     value                         Determines whether the user is deactivated or not.
+string      fields                        A comma separated list of any valid values that the [nested
+                                          member field resource]() accepts.
+string      organization_fields           Any valid value that the [nested organization
+                                          resource](https://developers.trello.com/v1.0/reference#organizations-nested-resource)
+                                          accepts.
+string      board_fields                  Any valid value that the [nested board
+                                          resource](https://developers.trello.com/v1.0/reference#boards-nested-resource)
+                                          accepts.
+
+`)
+auto setEnterpriseMemberDeactivated(string id, string idMember, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/enterprises/%s/members/%s/deactivated%s`(trelloAPIURL,id,idMember,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Transfer an organization to an enterprise.
+Required Params:
+string      id                            ID of the enterprise to retrieve.
+
+Query Params:
+string      idOrganization                ID of organization to be transferred to enterprise.
+
+`)
+auto setEnterpriseOrganizations(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/enterprises/%s/organizations%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Make member an admin of enterprise.
+Required Params:
+string      id                            ID of the enterprise to retrieve.
+string      idMember                      ID of member to be made an admin of enterprise.
+
+`)
+auto setEnterpriseAdmin(string id, string idMember)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/enterprises/%s/admins/%s%s`(trelloAPIURL,id,idMember,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Generate an auth token for an enterprise.
+Required Params:
+string      id                            ID of the enterprise to retrieve.
+
+Query Params:
+string      expiration                    One of: '1hour', '1day', '30days', 'never'
+
+`)
+auto setEnterpriseTokens(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/enterprises/%s/tokens%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Remove an organization from an enterprise.
+Required Params:
+string      id                            ID of the enterprise to retrieve.
+string      idOrganization                ID of the organization to be removed from the enterprise.
+
+`)
+auto deleteEnterpriseOrganization(string id, string idOrganization)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/enterprises/%s/organizations/%s%s`(trelloAPIURL,id,idOrganization,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Remove an member as admin from an enterprise.
+Required Params:
+string      id                            ID of the enterprise to retrieve.
+
+Optional Params:
+string      idMember                      ID of the member to be removed as an admin from enterprise.
+
+`)
+auto deleteEnterpriseOrganization(string id, string idMember = null)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/enterprises/%s/organizations/%s%s`(trelloAPIURL,id,idOrganization,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get information about a label by ID.
+Required Params:
+string      id                            
+
+Query Params:
+string      fields                        all or a comma-separated list of [fields](#label-object)
+
+`)
+auto label(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/labels/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update a label by ID.
+Required Params:
+string      id                            The id of the label to update
+
+Query Params:
+string      name                          The new name for the label
+string      color                         The new color for the label. See: [fields](#label-object)
+                                          for color options
+
+`)
+auto setLabel(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/labels/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update the color of a label by ID.
+Required Params:
+string      id                            The id of the label
+
+Query Params:
+string      value                         The new color for the label. See: [fields](#label-object)
+                                          for color options.
+
+`)
+auto setLabelColor(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/labels/%s/color%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update the name of a label by ID.
+Required Params:
+string      id                            The id of the label to update
+
+Query Params:
+string      value                         The new name for the label
+
+`)
+auto setLabelName(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/labels/%s/name%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Create a new label on a board.
+Query Params:
+string      name                          Name for the label
+string      color                         The color for the label. See [fields](#label-object) for
+                                          color options.
+string      idBoard                       The ID of the board to create the label on.
+
+`)
+auto setLabels(Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/labels%s`(trelloAPIURL,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Delete a label by ID.
+Required Params:
+string      id                            The ID of the label to delete.
+
+`)
+auto deleteLabel(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/labels/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get information about a list
+Required Params:
+string      id                            The ID of the list
+
+Query Params:
+string      fields                        'all' or a comma separated list of [fields](#list-object)
+
+`)
+auto list(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/lists/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get a specific property of a list
+Required Params:
+string      id                            The ID of the list
+string      field                         The field to return. See [fields](#list-object)
+
+`)
+auto list(string id, string field)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/lists/%s/%s%s`(trelloAPIURL,id,field,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`List the actions on a list
+Required Params:
+string      id                            The ID of the list
+
+`)
+auto listActions(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/lists/%s/actions%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get the board a list is on
+Required Params:
+string      id                            The ID of the list
+
+Query Params:
+string      fields                        'all' or a comma-separated list of board
+                                          [fields](#board-object)
+
+`)
+auto listBoard(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/lists/%s/board%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`List the cards in a list
+Required Params:
+string      id                            The ID of the list
+
+`)
+auto listCards(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/lists/%s/cards%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update the properties of a list
+Required Params:
+string      id                            The ID of the list to update
+
+Query Params:
+string      name                          New name for the list
+boolean     closed                        Whether the list should be closed (archived)
+string      idBoard                       ID of a board the list should be moved to
+string      pos                           New position for the list: 'top', 'bottom', or a positive
+                                          floating point number
+boolean     subscribed                    Whether the active member is subscribed to this list
+
+`)
+auto setList(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/lists/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Archive or unarchive a list
+Required Params:
+string      id                            The ID of the list
+
+Query Params:
+boolean     value                         Set to true to close (archive) the list
+
+`)
+auto setListClosed(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/lists/%s/closed%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Move a list to a new board
+Required Params:
+string      id                            The ID of the list
+
+Query Params:
+string      value                         The ID of the board to move the list to
+
+`)
+auto setListIdBoard(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/lists/%s/idBoard%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Rename a list
+Required Params:
+string      id                            The ID of the list
+
+Query Params:
+string      value                         The new name for the list
+
+`)
+auto setListName(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/lists/%s/name%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Change the position of a list
+Required Params:
+string      id                            The ID of the list
+
+Query Params:
+string      value                         'top', 'bottom', or a positive float
+
+`)
+auto setListPos(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/lists/%s/pos%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Subscribe or unsubscribe from a list
+Required Params:
+string      id                            The ID of the list
+
+Query Params:
+boolean     value                         'true' to subscribe, 'false' to unsubscribe
+
+`)
+auto setListSubscribed(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/lists/%s/subscribed%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Create a new list on a board
+Query Params:
+string      name                          Name for the list
+string      idBoard                       The long ID of the board the list should be created on
+string      idListSource                  ID of the list to copy into the new list
+string      pos                           Position of the list. 'top', 'bottom', or a positive
+                                          floating point number
+
+`)
+auto setLists(Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/lists%s`(trelloAPIURL,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Archive all cards in a list
+Required Params:
+string      id                            The ID of the list
+
+`)
+auto setListArchiveAllCards(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/lists/%s/archiveAllCards%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Move all cards in a list
+Required Params:
+string      id                            The ID of the list
+
+Query Params:
+string      idBoard                       The ID of the board the cards should be moved to
+string      idList                        The ID of the list that the cards should be moved to
+
+`)
+auto setListMoveAllCards(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/lists/%s/moveAllCards%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get a member
+Required Params:
+string      id                            The ID or username of the member
+
+Query Params:
+string      actions                       See the [Actions Nested
+                                          Resource](ref:actions-nested-resource)
+string      boards                        See the [Boards Nested
+                                          Resource](ref:section-objectidboardsopen)
+string      boardBackgrounds              One of: 'all', 'custom', 'default', 'none', 'premium'
+string      boardsInvited                 'all' or a comma-separated list of: closed, members, open,
+                                          organization, pinned, public, starred, unpinned
+string      boardsInvited_fields          'all' or a comma-separated list of board
+                                          [fields](ref:board-object)
+boolean     boardStars                    
+string      cards                         See the [Cards Nested Resource](ref:cards-nested-resource)
+                                          for additional options
+string      customBoardBackgrounds        'all' or 'none'
+string      customEmoji                   'all' or 'none'
+string      customStickers                'all' or 'none'
+string      fields                        'all' or a comma-separated list of member
+                                          [fields](ref:member-object)
+string      notifications                 See the [Notifications Nested
+                                          Resource](ref:section-objectidnotificationsall)
+string      organizations                 One of: 'all', 'members', 'none', 'public'
+string      organization_fields           'all' or a comma-separated list of organization
+                                          [fields](ref:organization-object)
+boolean     organization_paid_account     
+string      organizationsInvited          One of: 'all', 'members', 'none', 'public'
+string      organizationsInvited_fields   'all' or a comma-separated list of organization
+                                          [fields](ref:organization-object)
+boolean     paid_account                  
+boolean     savedSearches                 
+string      tokens                        'all' or 'none'
+
+`)
+auto member(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get a particular property of a member
+Required Params:
+string      id                            The ID or username of the member
+string      field                         One of the member [fields](ref:member-object)
+
+`)
+auto member(string id, string field)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/%s%s`(trelloAPIURL,id,field,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`List the actions for a member
+Required Params:
+string      id                            The ID or username of the member
+
+`)
+auto memberActions(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/actions%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Lists the boards that the user is a member of.
+Required Params:
+string      id                            The ID or username of the member
+
+Query Params:
+string      filter                        'all' or a comma-separated list of: 'closed', 'members',
+                                          'open', 'organization', 'public', 'starred'
+string      fields                        'all' or a comma-separated list of board
+                                          [fields](ref:board-object)
+string      lists                         Which lists to include with the boards. One of: 'all',
+                                          'closed', 'none', 'open'
+string      memberships                   'all' or a comma-separated list of 'active', 'admin',
+                                          'deactivated', 'me', 'normal'
+boolean     organization                  Whether to include the organization object with the boards
+string      organization_fields           'all' or a comma-separated list of organization
+                                          [fields](ref:organization-object)
+
+`)
+auto memberBoards(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/boards%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get a member's custom board backgrounds
+Required Params:
+string      id                            The ID or username of the member
+
+Query Params:
+string      filter                        One of: 'all', 'custom', 'default', 'none', 'premium'
+
+`)
+auto memberBoardBackgrounds(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/boardBackgrounds%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get a member's board background
+Required Params:
+string      id                            The ID or username of the member
+string      idBackground                  The ID of the board background
+
+Query Params:
+string      fields                        'all' or a comma-separated list of: 'brightness',
+                                          'fullSizeUrl', 'scaled', 'tile'
+
+`)
+auto memberBoardBackground(string id, string idBackground, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/boardBackgrounds/%s%s`(trelloAPIURL,id,idBackground,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`List a member's board stars
+Required Params:
+string      id                            The ID or username of the member
+
+`)
+auto memberBoardStars(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/boardStars%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get a specific boardStar
+Required Params:
+string      id                            The ID or username of the member
+string      idStar                        The ID of the board star
+
+`)
+auto memberBoardStar(string id, string idStar)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/boardStars/%s%s`(trelloAPIURL,id,idStar,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get the boards the member has been invited to
+Required Params:
+string      id                            The ID or username of the member
+
+Query Params:
+string      fields                        'all' or a comma-separated list of board
+                                          [fields](ref:board-object)
+
+`)
+auto memberBoardsInvited(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/boardsInvited%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Gets the cards a member is on
+Required Params:
+string      id                            The ID or username of the member
+
+Query Params:
+string      filter                        One of: 'all', 'closed', 'none', 'open', 'visible'
+
+`)
+auto memberCards(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/cards%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get a member's custom board backgrounds
+Required Params:
+string      id                            The ID or username of the member
+
+`)
+auto memberCustomBoardBackgrounds(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/customBoardBackgrounds%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get a specific custom board background
+Required Params:
+string      id                            The ID or username of the member
+
+Query Params:
+string      fields                        'all' or a comma-separated list of 'brightness',
+                                          'fullSizeUrl', 'scaled', 'tile'
+
+`)
+auto memberCustomBoardBackground(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/customBoardBackgrounds/%s%s`(trelloAPIURL,id,idBackground,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get a member's uploaded custom emoji
+Required Params:
+string      id                            The ID or username of the member
+
+`)
+auto memberCustomEmoji(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/customEmoji%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get a custom emoji
+Required Params:
+string      id                            The ID or username of the member
+string      idEmoji                       The ID of the custom emoji
+
+Query Params:
+string      fields                        'all' or a comma-separated list of 'name', 'url'
+
+`)
+auto memberCustomEmoji(string id, string idEmoji, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/customEmoji/%s%s`(trelloAPIURL,id,idEmoji,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get a member's uploaded stickers
+Required Params:
+string      id                            The ID or username of the member
+
+`)
+auto memberCustomStickers(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/customStickers%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get an uploaded sticker
+Required Params:
+string      id                            The ID or username of the member
+string      idSticker                     The ID of the uploaded sticker
+
+Query Params:
+string      fields                        'all' or a comma-separated list of 'scaled', 'url'
+
+`)
+auto memberCustomSticker(string id, string idSticker, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/customStickers/%s%s`(trelloAPIURL,id,idSticker,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get the enterprises that a member belongs to.
+Required Params:
+string      id                            The ID or username of the member
+string      idSticker                     The ID of the uploaded sticker
+
+Query Params:
+string      fields                        'all' or a comma-separated list of 'scaled', 'url'
+
+`)
+auto memberCustomSticker(string id, string idSticker, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/customStickers/%s%s`(trelloAPIURL,id,idSticker,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get a member's notifications
+Required Params:
+string      id                            The ID or username of the member
+
+Query Params:
+boolean     entities                      
+boolean     display                       
+string      filter                        
+string      read_filter                   One of: 'all', 'read', 'unread'
+string      fields                        'all' or a comma-separated list of notification
+                                          [fields](ref:notification-object)
+int         limit                         Max 1000
+int         page                          Max 100
+string      before                        A notification ID
+string      since                         A notification ID
+boolean     memberCreator                 
+string      memberCreator_fields          'all' or a comma-separated list of member
+                                          [fields](ref:member-object)
+
+`)
+auto memberNotifications(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/notifications%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get a member's teams
+Required Params:
+string      id                            The ID or username of the member
+
+Query Params:
+string      filter                        One of: 'all', 'members', 'none', 'public' (Note: 'members'
+                                          filters to only private teams)
+string      fields                        'all' or a comma-separated list of organization
+                                          [fields](ref:organization-object)
+boolean     paid_account                  
+
+`)
+auto memberOrganizations(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/organizations%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get a member's teams they have been invited to
+Required Params:
+string      id                            The ID or username of the member
+
+Query Params:
+string      fields                        'all' or a comma-separated list of organization
+                                          [fields](ref:organization-object)
+
+`)
+auto memberOrganizationsInvited(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/organizationsInvited%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`List the saved searches of a member
+Required Params:
+string      id                            The ID or username of the member
+
+`)
+auto memberSavedSearches(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/savedSearches%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get a saved search
+Required Params:
+string      id                            The ID or username of the member
+
+`)
+auto memberSavedSearche(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/savedSearches/%s%s`(trelloAPIURL,id,idSearch,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`List a members app tokens
+Required Params:
+string      id                            The ID or username of the member
+
+Query Params:
+boolean     webhooks                      Whether to include webhooks
+
+`)
+auto memberTokens(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/tokens%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update a member
+Required Params:
+string      id                            The ID or username of the member
+
+Query Params:
+string      fullName                      New name for the member. Cannot begin or end with a space.
+string      initials                      New initials for the member. 1-4 characters long.
+string      username                      New username for the member. At least 3 characters long,
+                                          only lowercase letters, underscores, and numbers. Must be
+                                          unique.
+string      bio                           
+string      avatarSource                  One of: 'gravatar', 'none', 'upload'
+boolean     prefs_colorBlind              
+string      prefs_locale                  
+int         prefs_minutesBetweenSummaries '-1' for disabled, '1', or '60'
+
+`)
+auto setMember(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update a board background
+Required Params:
+string      id                            The ID or username of the member
+string      idBackground                  The ID of the board background to update
+
+Query Params:
+string      brightness                    One of: 'dark', 'light', 'unknown'
+boolean     tile                          Whether the background should be tiled
+
+`)
+auto setMemberBoardBackground(string id, string idBackground, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/boardBackgrounds/%s%s`(trelloAPIURL,id,idBackground,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update the position of a starred board
+Required Params:
+string      id                            The ID or username of the member
+string      idStar                        The ID of the board star to update
+
+Query Params:
+string      pos                           New position for the starred board. 'top', 'bottom', or a
+                                          positive float.
+
+`)
+auto setMemberBoardStar(string id, string idStar, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/boardStars/%s%s`(trelloAPIURL,id,idStar,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            The ID or username of the member
+
+Query Params:
+string      brightness                    One of: 'dark', 'light', 'unknown'
+boolean     tile                          Whether to tile the background
+
+`)
+auto setMemberCustomBoardBackground(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s//customBoardBackgrounds/%s%s`(trelloAPIURL,id,idBackground,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update a saved search
+Required Params:
+string      id                            The ID or username of the member
+
+Query Params:
+string      name                          The new name for the saved search
+string      query                         The new search query
+string      pos                           New position for saves search. 'top', 'bottom', or a
+                                          positive float.
+
+`)
+auto setMemberSavedSearche(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/savedSearches/%s%s`(trelloAPIURL,id,idSearch,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Create a new avatar for a member
+Required Params:
+string      id                            The ID or username of the member
+
+Query Params:
+file        file                          
+
+`)
+auto setMemberAvatar(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/avatar%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Upload a new boardBackground
+Required Params:
+string      id                            The ID or username of the member
+
+Query Params:
+file        file                          
+
+`)
+auto setMemberBoardBackgrounds(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/boardBackgrounds%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Star a new board
+Required Params:
+string      id                            The ID or username of the member
+
+Query Params:
+string      idBoard                       The ID of the board to star
+string      pos                           The position of the newly starred board. 'top', 'bottom', or
+                                          a positive float.
+
+`)
+auto setMemberBoardStars(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/boardStars%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Upload a new custom board background
+Required Params:
+string      id                            The ID or username of the member
+
+Query Params:
+file        file                          
+
+`)
+auto setMemberCustomBoardBackgrounds(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/customBoardBackgrounds%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Upload a new custom emoji
+Required Params:
+string      id                            The ID or username of the member
+
+Query Params:
+file        file                          
+string      name                          Name for the emoji. 2 - 64 characters
+
+`)
+auto setMemberCustomEmoji(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/customEmoji%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Upload a new custom sticker
+Required Params:
+string      id                            The ID or username of the member
+
+Query Params:
+file        file                          
+
+`)
+auto setMemberCustomStickers(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/customStickers%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Dismiss a message
+Required Params:
+string      id                            The ID or username of the member
+
+Query Params:
+string      value                         The message to dismiss
+
+`)
+auto setMemberOneTimeMessagesDismissed(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/oneTimeMessagesDismissed%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Create a new saved search
+Required Params:
+string      id                            The ID or username of the member
+
+Query Params:
+string      name                          The name for the saved search
+string      query                         The search query
+string      pos                           The position of the saved search. 'top', 'bottom', or a
+                                          positive float.
+
+`)
+auto setMemberSavedSearches(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/savedSearches%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Delete a board background
+Required Params:
+string      id                            The ID or username of the member
+string      idBackground                  The ID of the board background to delete
+
+`)
+auto deleteMemberBoardBackground(string id, string idBackground)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/boardBackgrounds/%s%s`(trelloAPIURL,id,idBackground,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Unstar a board
+Required Params:
+string      id                            The ID or username of the member
+string      idStar                        The ID of the board star to remove
+
+`)
+auto deleteMemberBoardStar(string id, string idStar)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/boardStars/%s%s`(trelloAPIURL,id,idStar,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Delete a custom board background
+Required Params:
+string      id                            The ID or username of the member
+string      idBackground                  The ID of the custom board background to delete
+
+`)
+auto deleteMemberCustomBoardBackground(string id, string idBackground)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/customBoardBackgrounds/%s%s`(trelloAPIURL,id,idBackground,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Delete a custom sticker
+Required Params:
+string      id                            The ID or username of the member
+string      idSticker                     The ID of the custom sticker to delete
+
+`)
+auto deleteMemberCustomSticker(string id, string idSticker)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/customStickers/%s%s`(trelloAPIURL,id,idSticker,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Delete a saved search
+Required Params:
+string      id                            The ID or username of the member
+string      idSearch                      The ID of the saved search to delete
+
+`)
+auto deleteMemberSavedSearche(string id, string idSearch)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/members/%s/savedSearches/%s%s`(trelloAPIURL,id,idSearch,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            The ID of the notification
+
+Query Params:
+boolean     board                         Whether to include the board object
+string      board_fields                  'all' or a comma-separated list of board
+                                          [fields](ref:board-object)
+boolean     card                          Whether to include the card object
+string      card_fields                   'all' or a comma-separated list of card
+                                          [fields](ref:card-object)
+boolean     display                       Whether to include the display object with the results
+boolean     entities                      Whether to include the entities object with the results
+string      fields                        'all' or a comma-separated list of notification
+                                          [fields](ref:notification-object)
+boolean     list                          Whether to include the list object
+boolean     member                        Whether to include the member object
+string      member_fields                 'all' or a comma-separated list of member
+                                          [fields](ref:member-object)
+boolean     memberCreator                 Whether to include the member object of the creator
+string      memberCreator_fields          'all' or a comma-separated list of member
+                                          [fields](ref:member-object)
+boolean     organization                  Whether to include the organization object
+string      organization_fields           'all' or a comma-separated list of organization
+                                          [fields](ref:organization-object)
+
+`)
+auto notification(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/notifications/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get a specific property of a notification
+Required Params:
+string      id                            The ID of the notification
+string      field                         A notification [field](ref:notifcation-object)
+
+`)
+auto notification(string id, string field)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/notifications/%s/%s%s`(trelloAPIURL,id,field,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get the board a notification is associated with
+Required Params:
+string      id                            The ID of the notification
+
+Query Params:
+string      fields                        'all' or a comma-separated list of
+                                          board[fields](ref:board-object)
+
+`)
+auto notificationBoard(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/notifications/%s/board%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get the card a notification is associated with
+Required Params:
+string      id                            The ID of the notification
+
+Query Params:
+string      fields                        'all' or a comma-separated list of card
+                                          [fields](ref:card-object)
+
+`)
+auto notificationCard(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/notifications/%s/card%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get the list a notification is associated with
+Required Params:
+string      id                            The ID of the notification
+
+Query Params:
+string      fields                        'all' or a comma-separated list of list
+                                          [fields](ref:list-object)
+
+`)
+auto notificationList(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/notifications/%s/list%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get the member (not the creator) a notification is about
+Required Params:
+string      id                            The ID of the notification
+
+Query Params:
+string      fields                        'all' or a comma-separated list of member
+                                          [fields](ref:member-object)
+
+`)
+auto notificationMember(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/notifications/%s/member%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get the member who created the notification
+Required Params:
+string      id                            The ID of the notification
+
+Query Params:
+string      fields                        'all' or a comma-separated list of member
+                                          [fields](ref:member-object)
+
+`)
+auto notificationMemberCreator(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/notifications/%s/memberCreator%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get the organization a notification is associated with
+Required Params:
+string      id                            The ID of the notification
+
+Query Params:
+string      fields                        'all' or a comma-separated list of organization
+                                          [fields](ref:organization-object)
+
+`)
+auto notificationOrganization(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/notifications/%s/organization%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update the read status of a notification
+Required Params:
+string      id                            The ID of the notification
+
+Query Params:
+boolean     unread                        
+
+`)
+auto setNotification(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/notifications/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update the read status of a notification
+Required Params:
+string      id                            The ID of the notification
+
+Query Params:
+boolean     value                         
+
+`)
+auto setNotificationUnread(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/notifications/%s/unread%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Mark all notifications as read
+`)
+auto setNotificationsAllRead()
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/notifications/all/read%s`(trelloAPIURL,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            The ID or name of the organization
+
+`)
+auto organization(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/organizations/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            The ID or name of the organization
+string      field                         An organization [field](ref:organization-object)
+
+`)
+auto organization(string id, string field)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/organizations/%s/%s%s`(trelloAPIURL,id,field,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`List the actions on a team
+Required Params:
+string      id                            The ID or name of the organization
+
+`)
+auto organizationActions(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/organizations/%s/actions%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`List the boards in a team
+Required Params:
+string      id                            The ID or name of the organization
+
+Query Params:
+string      filter                        'all' or a comma-separated list of: 'open', 'closed',
+                                          'members', 'organization', 'public'
+string      fields                        'all' or a comma-separated list of board
+                                          [fields](ref:board-object)
+
+`)
+auto organizationBoards(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/organizations/%s/boards%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`List the members in a team
+Required Params:
+string      id                            The ID or name of the organization
+
+`)
+auto organizationMembers(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/organizations/%s/members%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            The ID or name of the organization
+string      filter                        One of: 'all', 'admins', 'normal'
+
+`)
+auto organizationMember(string id, string filter)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/organizations/%s/members/%s%s`(trelloAPIURL,id,filter,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`List the members with pending invites to a team
+Required Params:
+string      id                            The ID or name of the organization
+
+Query Params:
+string      fields                        'all' or a comma-separated list of member
+                                          [fields](ref:member-object)
+
+`)
+auto organizationMembersInvited(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/organizations/%s/membersInvited%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`List the memberships of a team
+Required Params:
+string      id                            The ID or name of the organization
+
+Query Params:
+string      filter                        'all' or a comma-separated list of: 'active', 'admin',
+                                          'deactivated', 'me', 'normal'
+boolean     member                        Whether to include the member objects with the memberships
+
+`)
+auto organizationMemberships(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/organizations/%s/memberships%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`List the memberships of a team
+Required Params:
+string      id                            The ID or name of the organization
+string      idMembership                  The ID of the membership to load
+
+Query Params:
+boolean     member                        Whether to include the member object in the response
+
+`)
+auto organizationMembership(string id, string idMembership, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/organizations/%s/memberships/%s%s`(trelloAPIURL,id,idMembership,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get organization scoped pluginData on this team
+Required Params:
+string      id                            The ID or name of the organization
+
+`)
+auto organizationPluginData(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/organizations/%s/pluginData%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`List the organization's collections
+Required Params:
+string      id                            The ID or name of the organization
+
+`)
+auto organizationTags(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/organizations/%s/tags%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Used to check whether the given board has new billable guests on it.
+Required Params:
+string      id                            The ID or name of the organization
+string      idBoard                       The ID of the board to check for new billable guests.
+
+`)
+auto organizationNewBillableGuest(string id, string idBoard)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/organizations/%s/newBillableGuests/%s%s`(trelloAPIURL,id,idBoard,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Retrieve the exports that exist for the given organization
+Required Params:
+string      id                            The ID or name of the organization
+
+`)
+auto organizationExports(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/organizations/%s/exports%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update an organization
+Required Params:
+string      id                            The id or name of the organization to update
+
+Query Params:
+string      name                          A new name for the organization. At least 3 lowercase
+                                          letters, underscores, and numbers. Must be unique
+string      displayName                   A new displayName for the organization. Must be at least 1
+                                          character long and not begin or end with a space.
+string      desc                          A new description for the organization
+string      website                       A URL starting with 'http://', 'https://', or 'null'
+string      prefs_associatedDomain        The Google Apps domain to link this org to.
+boolean     prefs_externalMembersDisabled Whether non-team members can be added to boards inside the
+                                          team
+int         prefs_googleAppsVersion       '1' or '2'
+string      prefs_boardVisibilityRestrict_orgWho on the team can make team visible boards. One of
+                                          'admin', 'none', 'org'
+string      prefs_boardVisibilityRestrict_privateWho can make private boards. One of: 'admin', 'none', 'org'
+string      prefs_boardVisibilityRestrict_publicWho on the team can make public boards. One of: 'admin',
+                                          'none', 'org'
+string      prefs_orgInviteRestrict       An email address with optional wildcard characters. (E.g.
+                                          'subdomain.*.trello.com')
+string      prefs_permissionLevel         Whether the team page is publicly visible. One of:
+                                          'private', 'public'
+
+`)
+auto setOrganization(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/organizations/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            The ID or name of the organization
+
+Query Params:
+string      email                         An email address
+string      fullName                      Name for the member, at least 1 character not beginning or
+                                          ending with a space
+string      type                          One of: 'admin', 'normal'
+
+`)
+auto setOrganizationMembers(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/organizations/%s/members%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Add a member to a team or update their member type.
+Required Params:
+string      id                            The ID or name of the organization
+string      idMember                      The ID or username of the member to update
+
+Query Params:
+string      type                          One of: 'admin', 'normal'
+
+`)
+auto setOrganizationMember(string id, string idMember, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/organizations/%s/members/%s%s`(trelloAPIURL,id,idMember,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Deactivate or reactivate a member of a team
+Required Params:
+string      id                            The ID or name of the organization
+string      idMember                      The ID or username of the member to update
+
+Query Params:
+boolean     value                         
+
+`)
+auto setOrganizationMemberDeactivated(string id, string idMember, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/organizations/%s/members/%s/deactivated%s`(trelloAPIURL,id,idMember,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Create a new team
+Query Params:
+string      displayName                   
+string      desc                          The description for the team
+string      name                          A string with a length of at least 3. Only lowercase
+                                          letters, underscores, and numbers are allowed. Must be
+                                          unique.
+string      website                       A URL starting with 'http://' or 'https://'
+
+`)
+auto setOrganizations(Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/organizations%s`(trelloAPIURL,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Set the logo image for a team
+Required Params:
+string      id                            The ID or name of the team
+
+Query Params:
+file        file                          Image file for the logo
+
+`)
+auto setOrganizationLogo(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/organizations/%s/logo%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Create a new collection in a team
+Required Params:
+string      id                            The ID or name of the team
+
+Query Params:
+string      name                          The name for the new collection
+
+`)
+auto setOrganizationTags(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/organizations/%s/tags%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Kick off CSV export for an organization
+Required Params:
+string      id                            The ID or name of the team
+
+Query Params:
+boolean     attachments                   Whether the CSV should include attachments or not.
+
+`)
+auto setOrganizationExports(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/organizations/%s/exports%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Delete a team
+Required Params:
+string      id                            The ID or name of the organization
+
+`)
+auto deleteOrganization(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/organizations/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Delete a the logo from a team
+Required Params:
+string      id                            The ID or name of the organization
+
+`)
+auto deleteOrganizationLogo(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/organizations/%s/logo%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Remove a member from a team
+Required Params:
+string      id                            The ID or name of the organization
+string      idMember                      The ID of the member to remove from the team
+
+`)
+auto deleteOrganizationMember(string id, string idMember)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/organizations/%s/members/%s%s`(trelloAPIURL,id,idMember,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Remove a member from a team and from all team boards
+Required Params:
+string      id                            The ID or name of the organization
+string      idMember                      The ID of the member to remove from the team
+
+`)
+auto deleteOrganizationMemberAll(string id, string idMember)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/organizations/%s/members/%s/all%s`(trelloAPIURL,id,idMember,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Remove the associated Google Apps domain from a team
+Required Params:
+string      id                            The ID or name of the organization
+
+`)
+auto deleteOrganizationPrefsAssociatedDomain(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/organizations/%s/prefs/associatedDomain%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Remove the email domain restriction on who can be invited to the team
+Required Params:
+string      id                            The ID or name of the organization
+
+`)
+auto deleteOrganizationPrefsOrgInviteRestrict(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/organizations/%s/prefs/orgInviteRestrict%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Delete an organization's tag
+Required Params:
+string      id                            The ID or name of the organization
+string      idTag                         The ID of the tag to delete
+
+`)
+auto deleteOrganizationTag(string id, string idTag)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/organizations/%s/tags/%s%s`(trelloAPIURL,id,idTag,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`List available emoji
+Query Params:
+string      locale                        The locale to return emoji descriptions and names in.
+                                          Defaults to the logged in member's locale.
+boolean     spritesheets                  'true' to return spritesheet URLs in the response
+
+`)
+auto emoji(Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/emoji%s`(trelloAPIURL,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`List reactions for an action
+Required Params:
+string      idAction                      The ID of the action
+
+Query Params:
+boolean     member                        Whether to load the member as a nested resource. See
+                                          [Members Nested Resource](#members-nested-resource)
+boolean     emoji                         Whether to load the emoji as a nested resource.
+
+`)
+auto actionReactions(string idAction, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/actions/%s/reactions%s`(trelloAPIURL,idAction,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get information for a reaction
+Required Params:
+string      idAction                      The ID of the action
+string      id                            The ID of the reaction
+
+Query Params:
+boolean     member                        Whether to load the member as a nested resource. See
+                                          [Members Nested Resource](#members-nested-resource)
+boolean     emoji                         Whether to load the emoji as a nested resource.
+
+`)
+auto actionReaction(string idAction, string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/actions/%s/reactions/%s%s`(trelloAPIURL,idAction,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`List a summary of all reactions for an action
+Required Params:
+string      idAction                      The ID of the action
+
+`)
+auto actionReactionsSummary(string idAction)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/actions/%s/reactionsSummary%s`(trelloAPIURL,idAction,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Adds a new reaction to an action
+Required Params:
+string      idAction                      The ID of the action
+
+Optional Params:
+string      shortName                     The primary 'shortName' of the emoji to add. See
+                                          [/emoji](#emoji)
+string      skinVariation                 The 'skinVariation' of the emoji to add. See
+                                          [/emoji](#emoji)
+string      native                        The emoji to add as a native unicode emoji. See
+                                          [/emoji](#emoji)
+string      unified                       The 'unified' value of the emoji to add. See
+                                          [/emoji](#emoji)
+
+`)
+auto setActionReactions(string idAction, string shortName = null, string skinVariation = null, string native = null, string unified = null)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/actions/%s/reactions%s`(trelloAPIURL,idAction,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Deletes a reaction
+Required Params:
+string      idAction                      The ID of the action
+string      id                            The ID of the reaction
+
+`)
+auto deleteActionReaction(string idAction, string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/actions/%s/reactions/%s%s`(trelloAPIURL,idAction,id,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Find what you're looking for in Trello
+Query Params:
+string      query                         The search query with a length of 1 to 16384 characters
+string      idBoards                      mine or a comma-separated list of board ids
+string      idOrganizations               A comma-separated list of team ids
+string      idCards                       A comma-separated list of card ids
+string      modelTypes                    What type or types of Trello objects you want to search. all
+                                          or a comma-separated list of: actions, boards, cards,
+                                          members, organizations
+string      board_fields                  all or a comma-separated list of: closed, dateLastActivity,
+                                          dateLastView, desc, descData, idOrganization, invitations,
+                                          invited, labelNames, memberships, name, pinned, powerUps,
+                                          prefs, shortLink, shortUrl, starred, subscribed, url
+int         boards_limit                  The maximum number of boards returned. Maximum: 1000
+string      card_fields                   all or a comma-separated list of: badges, checkItemStates,
+                                          closed, dateLastActivity, desc, descData, due, email,
+                                          idAttachmentCover, idBoard, idChecklists, idLabels, idList,
+                                          idMembers, idMembersVoted, idShort, labels,
+                                          manualCoverAttachment, name, pos, shortLink, shortUrl,
+                                          subscribed, url
+int         cards_limit                   The maximum number of cards to return. Maximum: 1000
+int         cards_page                    The page of results for cards. Maximum: 100
+boolean     card_board                    Whether to include the parent board with card results
+boolean     card_list                     Whether to include the parent list with card results
+boolean     card_members                  Whether to include member objects with card results
+boolean     card_stickers                 Whether to include sticker objects with card results
+string      card_attachments              Whether to include attachment objects with card results. A
+                                          boolean value (true or false) or cover for only card cover
+                                          attachments.
+string      organization_fields           all or a comma-separated list of billableMemberCount, desc,
+                                          descData, displayName, idBoards, invitations, invited,
+                                          logoHash, memberships, name, powerUps, prefs,
+                                          premiumFeatures, products, url, website
+int         organizations_limit           The maximum number of teams to return. Maximum 1000
+string      member_fields                 all or a comma-separated list of: avatarHash, bio, bioData,
+                                          confirmed, fullName, idPremOrgsAdmin, initials, memberType,
+                                          products, status, url, username
+int         members_limit                 The maximum number of members to return. Maximum 1000
+boolean     partial                       By default, Trello searches for each word in your query
+                                          against exactly matching words within Member content.
+                                          Specifying partial to be true means that we will look for
+                                          content that starts with any of the words in your query. If
+                                          you are looking for a Card titled "My Development Status
+                                          Report", by default you would need to search for
+                                          "Development". If you have partial enabled, you will be able
+                                          to search for "dev" but not "velopment".
+
+`)
+auto search(Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/search%s`(trelloAPIURL,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Search for Trello members
+Query Params:
+string      query                         Search query 1 to 16384 characters long
+int         limit                         The maximum number of results to return. Maximum of 20.
+string      idBoard                       
+string      idOrganization                
+boolean     onlyOrgMembers                
+
+`)
+auto searchMembers(Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/search/members/%s`(trelloAPIURL,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Retrieve information about a token.
+Required Params:
+string      token                         
+
+Query Params:
+string      fields                        'all' or a comma-separated list of 'dateCreated',
+                                          'dateExpires', 'idMember', 'identifier', 'permissions'
+boolean     webhooks                      Determines whether to include webhooks.
+
+`)
+auto token(string token, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/tokens/%s%s`(trelloAPIURL,token,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Retrieve information about a token's owner by token.
+Required Params:
+string      token                         
+
+Query Params:
+string      fields                        'all' or a comma-separated list of valid fields for [Member
+                                          Object](ref:member-object).
+
+`)
+auto tokenMember(string token, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/tokens/%s/member%s`(trelloAPIURL,token,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Retrieve all webhooks created with a token.
+Required Params:
+string      token                         
+
+`)
+auto tokenWebhooks(string token)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/tokens/%s/webhooks%s`(trelloAPIURL,token,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Retrieve a webhook created with a token.
+Required Params:
+string      token                         
+string      idWebhook                     ID of the [Webhooks](ref:webhooks) to retrieve.
+
+`)
+auto tokenWebhook(string token, string idWebhook)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/tokens/%s/webhooks/%s%s`(trelloAPIURL,token,idWebhook,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Create a new webhook for a token.
+Required Params:
+string      token                         
+
+Query Params:
+string      description                   A description to be displayed when retrieving information
+                                          about the webhook.
+string      callbackURL                   The URL that the webhook should POST information to.
+string      idModel                       ID of the object to create a webhook on.
+
+`)
+auto setTokenWebhooks(string token, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/tokens/%s/webhooks%s`(trelloAPIURL,token,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update an existing webhook.
+Required Params:
+string      token                         The token to which the webhook belongs
+string      webhookId                     ID of the webhook to update
+
+Query Params:
+string      description                   A description to be displayed when retrieving information
+                                          about the webhook.
+string      callbackURL                   The URL that the webhook should POST information to.
+string      idModel                       ID of the object to create a webhook on.
+
+`)
+auto setTokenWebhook(string token, string webhookId, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/tokens/%s/webhooks/%s%s`(trelloAPIURL,token,webhookId,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Delete a token.
+Required Params:
+string      token                         
+
+`)
+auto deleteToken(string token)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/tokens/%s/%s`(trelloAPIURL,token,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Delete a webhook created with given token.
+Required Params:
+string      token                         
+string      idWebhook                     ID of the [webhook](ref:webhooks) to delete.
+
+`)
+auto deleteTokenWebhook(string token, string idWebhook)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/tokens/%s/webhooks/%s%s`(trelloAPIURL,token,idWebhook,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get a webhook by ID.
+Required Params:
+string      id                            ID of the webhook to retrieve.
+
+`)
+auto webhook(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/webhooks/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Get a webhook's field.
+Required Params:
+string      id                            ID of the webhook.
+string      field                         Field to retrieve. One of: 'active', 'callbackURL',
+                                          'description', 'idModel'
+
+`)
+auto webhook(string id, string field)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/webhooks/%s/%s%s`(trelloAPIURL,id,field,queryParamString));
+	auto result = cast(string) (Request().get(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Update a webhook by ID.
+Required Params:
+string      id                            ID of the webhook to update.
+
+Query Params:
+string      description                   A string with a length from '0' to '16384'.
+string      callbackURL                   A valid URL that is reachable with a 'HEAD' and 'POST'
+                                          request.
+string      idModel                       ID of the model to be monitored
+boolean     active                        Determines whether the webhook is active and sending 'POST'
+                                          requests.
+
+`)
+auto setWebhook(string id, Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/webhooks/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().put(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Create a new webhook.
+Query Params:
+string      description                   A string with a length from '0' to '16384'.
+string      callbackURL                   A valid URL that is reachable with a 'HEAD' and 'POST'
+                                          request.
+string      idModel                       ID of the model to be monitored
+boolean     active                        Determines whether the webhook is active and sending 'POST'
+                                          requests.
+
+`)
+auto setWebhooks(Variable[string] queryParams = Variable[string].init)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/webhooks/%s`(trelloAPIURL,queryParamString));
+	auto result = cast(string) (Request().post(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
+@SILdoc(`Delete a webhook by ID.
+Required Params:
+string      id                            ID of the webhook to delete.
+
+`)
+auto deleteWebhook(string id)
+{
+
+	import requests;
+	import std.uri:encode;
+	import kaleidic.sil.std.core.util:dslParseJson;
+	import std.array:array;
+	import std.stdio:writeln;
+	import std.string:startsWith;
+
+	string[] queryParams;
+
+	if (params !is null)
+	{
+		foreach(p;params.byKeyValue)
+			queryParams ~= format!"%s=%s"(p.key,p.value);
+	}
+	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
+
+	auto url = encode(format!`%s/1/webhooks/%s%s`(trelloAPIURL,id,queryParamString));
+	auto result = cast(string) (Request().delete(url).responseBody.array);
+	bool isJson = (result.startsWith("{") || result.startsWith("["));
+	return (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;
+}
+
+
