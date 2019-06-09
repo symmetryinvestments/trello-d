@@ -1,6 +1,16 @@
 
 module kaleidic.sil.std.extra.trello;
 
+/+
+	This file is generated automatically - do not edit or else your changes will be lost.
+
+	Example use from SIL:
+
+		trello.setSecrets()
+		a=trello.search({"query":"ALL","cards_limit":1000,"cards_page":1})
+		a.cards
++/
+
 import kaleidic.sil.lang.handlers:Handlers;
 import kaleidic.sil.lang.types: Variable, SILdoc;
 import requests: Request;
