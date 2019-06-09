@@ -1,29 +1,84 @@
-import arrogant;
-import asdf;
-import std.stdio;
-import std.conv:to;
-import std.net.curl;
-import std.algorithm:map,sort,uniq;
-import std.array:array;
-import std.string:join;
-static import std.file;
-void main()
+import asdf: Asdf;
+
+enum targetFile = "trellogen.d";
+
+int main(string[] args)
 {
+	static import std.file;
 	import std.string:strip;
 	import std.algorithm:filter;
-	auto arrogant = Arrogant();
-	auto apidoc = get("https://developers.trello.com/reference").idup;
-	auto tree = arrogant.parse(apidoc);
-	//writeln(tree.toString);
-	// writeln("====");
-	auto actions = tree.byClass("hub-content-container").front.byId("docs").front["data-json"].get; // map!(t=>t.byId("docs")).front; // array; // .map!(n => n.byId("api-explorer")).array; // map!(n => n.byClass("is-lang-curl"))).array;
+	import std.conv:to;
+	import asdf:parseJson;
+	import std.stdio:stderr,writefln;
+
+	auto actions = getAPIInfo("https://developers.trello.com/reference");
 	auto json = parseJson(actions);
 	std.file.write("trello.json",json.to!string);
 	auto apis = parseAPI(json);
-	foreach(api;apis.filter!(api=>api.url.strip.length>0))
+	std.file.write(targetFile,apis.generateAPI);
+	stderr.writefln("success");
+	return 0;
+}
+
+string getAPIInfo(string url)
+{
+	import arrogant:Arrogant;
+	import std.net.curl:get;
+	auto arrogant = Arrogant();
+	auto apidoc = get(url).idup;
+	auto tree = arrogant.parse(apidoc);
+	auto actions = tree.byClass("hub-content-container").front.byId("docs").front["data-json"].get;
+	return actions;
+}
+
+string generateRegisterHandlerHelper(ApiCall[] apis)
+{
+	import std.array:Appender,array;
+	import std.algorithm:map,sort,uniq;
+	import std.string:join,leftJustify,wrap,splitLines;
+	import std.format:format;
+	Appender!string ret;
+
+	auto apiText = apis
+						.map!(api => (api.description ~ ",").leftJustify(28))
+						.array
+						.sort
+						.uniq
+						.join(" ")
+						.wrap(80)
+						.splitLines
+						.map!(line => "\t\t" ~ line)
+						.array
+						.join("\n");
+	ret.put(format!
+q{
+private void registerHandlerHelper(ref Handlers handlers)
+{
+	static foreach(F;AliasSeq!(
+%s
+	))
 	{
-		writeln(api.toD);
+		handlers.registerHandler!F;
 	}
+}
+
+}	(apiText));
+	return ret.data;
+}
+
+string generateAPI(ApiCall[] apis)
+{
+	import std.algorithm:map,filter;
+	import std.string:join,strip;
+	import std.array:Appender,array;
+	Appender!string ret;
+
+	apis = apis.filter!(api => api.url.strip.length > 0).array;
+	ret.put(CodePrelude);
+	ret.put(apis.generateRegisterHandlerHelper);
+	ret.put(apis.map!(api => api.toD).join('\n'));
+	ret.put("\n// FIN");
+	return ret.data;
 }
 
 ApiCall[] parseAPI(ref Asdf json)
@@ -59,15 +114,6 @@ struct ResultCodeEntry
 		if(s.length==0)
 			return;
 		this.json = s;
-		/+
-			writeln(s);
-		auto json = parseJson(s);
-		id = json["id"].get!string("");
-		description =json["description"].get!string("");
-		idModel = json["idModel"].get!string("");
-		active = json["active"].get!bool(false);
-		name = json["name"].get!string("");
-		+/
 	}
 }
 
@@ -87,24 +133,87 @@ struct ResultCode
 
 
 enum CodeApiImports =
-`
+q{
 	import requests;
 	import std.uri:encode;
-	import kaleidic.sil.std.core.util:dslParseJson;
 	import std.array:array;
-	import std.stdio:writeln;
-	import std.string:startsWith;
-`;
+};
 
-enum CodeAddQueryParams =
-`
-	if (params !is null)
+enum CodePrelude =
+q{
+module kaleidic.sil.std.extra.trello;
+
+import kaleidic.sil.lang.handlers:Handlers;
+import kaleidic.sil.lang.types: Variable, SILdoc;
+
+shared string trelloAPIURL = "https://api.trello.com";
+shared string trelloSecret, trelloAuth;
+
+void registerTrello(Handlers handlers)
+{
+	import std.meta:AliasSeq;
+	handlers.openModule("trello");
+	scope(exit) handlers.closeModule();
+	static foreach(F;	AliasSeq!(	setSecrets,	createTokenURI,		openBrowserAuth,		setSecrets))
+		handlers.registerHandler!F;
+	handlers.registerHandlerHelper;
+}
+
+string createTokenURI(string apiKey="", string tokenScope = "read,write,account", string name = "Sil", string expiration = "never")
+{
+	import std.process: environment;
+	if (apiKey.length == 0) apiKey = environment.get("TRELLO_API_KEY","");
+	return format!"https://trello.com/1/authorize?expiration=%s&name=%s&scope=%s&response_type=token&key=%s"
+			(expiration,name,tokenScope,apiKey);
+}
+
+
+void openBrowserAuth(string apiKey="", string tokenScope = "read,write,account", string name = "Sil", string expiration = "never")
+{
+	import std.process: environment;
+	if (apiKey.length == 0) apiKey = environment.get("TRELLO_API_KEY","");
+	import kaleidic.sil.std.core.process:openBrowser;
+	auto uri = createTokenURI(apiKey,tokenScope,name,expiration);
+	openBrowser(uri);
+}
+
+@SILdoc("set Trello secrets from TRELLO_SECRET and TRELLO_AUTH environmental variables")
+string setSecrets()
+{
+	import std.process: environment;
+	trelloSecret = environment.get("TRELLO_API_KEY","");
+	trelloAuth = environment.get("TRELLO_AUTH","");
+	return "Secret has been set to TRELLO_API_KEY and auth to TRELLO_AUTH environment variables";
+}
+
+private string queryParamString(Variable[string] queryParams)
+{
+	import std.format:format;
+	import std.string:join;
+
+	string[] queryParamsArray;
+	if (queryParams !is null)
 	{
-		foreach(p;params.byKeyValue)
-			queryParams ~= format!"%s=%s"(p.key,p.value);
+		foreach(p;queryParams.byKeyValue)
+			queryParamsArray ~= format!"%s=%s"(p.key,p.value);
 	}
-	string queryParamString = (queryParams.length>0) ? format!"&%s&"(queryParams.join("&")):"";
-`;
+	return (queryParamsArray.length>0) ? format!"&%s&"(queryParamsArray.join("&")):"";
+}
+
+private bool isJson(string result)
+{
+	import std.string:strip,startsWith;
+	result = result[0.100].strip;
+	return result.startsWith("{") || result.startsWith("[");
+}
+
+private Variable asVariable(string result)
+{
+	import kaleidic.sil.std.core.util:dslParseJson;
+	return (result.length > 0 && result.isJson) ? dslParseJson(result) : Variable.init;
+}
+
+};
 
 string toD(ApiCall call)
 {
@@ -115,19 +224,14 @@ string toD(ApiCall call)
 	Appender!string ret;
 	ret.put(call.getSilDoc());
 	ret.put(call.getPrototype());
-	ret.put("\n{\n");
+	ret.put("\n{");
 	ret.put(CodeApiImports);
-	ret.put("\n\tstring[] queryParams;\n");
-	ret.put(CodeAddQueryParams);
 	ret.put("\n");
 	ret.put("	auto url = encode(" ~ generateUrlD(call) ~ ");");
 	//format!"%s/1/search/?query=%s%s&key=%s&token=%s"(trelloAPIURL,query,queryParamString,trelloSecret,trelloAuth));`);
 	ret.put("\n");
 	ret.put(format!"	auto result = cast(string) (Request().%s(url).responseBody.array);\n"(call.method));
-	ret.put("\t");
-	ret.put(`bool isJson = (result.startsWith("{") || result.startsWith("["));`);
-	ret.put("\n");
-	ret.put("\treturn (result.length > 0 && isJson) ? dslParseJson(result) : Variable.init;");
+	ret.put("\treturn result.asVariable;");
 	ret.put("\n}\n");
 	ret.put("\n");
 	return ret.data;
@@ -147,10 +251,10 @@ string replaceSwaggerToken(string url)
 
 string generateUrlD(ApiCall call, bool includeQueryParam = true)
 {
-	import std.string:split;
+	import std.string:split,join;
 	import std.format:format;
-	import std.algorithm:filter;
-	import std.array:Appender;
+	import std.algorithm:filter,map;
+	import std.array:Appender,array;
 	Appender!string ret;
 	auto names = call.url.split("/").filter!(tok => tok.length>3 && tok[0]=='{').map!(tok=>tok[1..$-1]).array;
 	names = "trelloAPIURL" ~ names;
@@ -161,7 +265,7 @@ string generateUrlD(ApiCall call, bool includeQueryParam = true)
 	if (includeQueryParam)
 	{
 		ret.put("%s");
-		names= names ~ "queryParamString";
+		names= names ~ "queryParams.queryParamString";
 	}
 	ret.put("`(");
 	ret.put(names.join(","));
@@ -171,12 +275,14 @@ string generateUrlD(ApiCall call, bool includeQueryParam = true)
 
 string prettyParams(Param[] params)
 {
-	import std.string:leftJustify,wrap;
+	import std.string:leftJustify,wrap,join;
 	import std.format:format;
-	import std.array:Appender;
+	import std.array:Appender,array;
 	import std.string:splitLines,strip,replace;
 	import std.algorithm:filter;
 	import std.range:repeat;
+	import std.conv:to;
+
 	Appender!string ret;
 
 	foreach(param;params)
@@ -215,7 +321,7 @@ string getSilDocParamsHelper(string title, Param[] params)
 
 string getSilDoc(ApiCall call)
 {
-	import std.array:Appender;
+	import std.array:Appender,array;
 	import std.algorithm:filter;
 	import std.format:format;
 	import std.string:strip;
@@ -254,8 +360,9 @@ string replaceBackTick(string s)
 
 string getPrototype(ApiCall call)
 {
-	import std.array:Appender;
-	import std.algorithm:filter;
+	import std.array:Appender,array;
+	import std.algorithm:filter,map;
+	import std.string:join;
 
 	Appender!string ret;
 
@@ -291,8 +398,10 @@ struct ApiCall
 
 	this(ref Asdf c)
 	{
-		import std.algorithm:canFind,countUntil,filter;
+		import std.algorithm:canFind,countUntil,filter,map;
 		import std.string:split;
+		import std.array:array;
+
 		slug = c["slug"].get!string("");
 		excerpt=c["excerpt"].get!string("");
 		type=c["type"].get!string("");
@@ -452,6 +561,7 @@ string toD(Param param)
 
 ParamType parseParamType(string s)
 {
+	import std.conv:to;
 	import std.traits:EnumMembers;
 	static foreach(T; EnumMembers!ParamType)
 	{
