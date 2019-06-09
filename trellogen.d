@@ -128,6 +128,99 @@ private Variable asVariable(string result)
 	return (result.length > 0 && result.isJson) ? dslParseJson(result) : Variable.init;
 }
 
+// FIXME - special cases
+
+
+@SILdoc(`List the saved searches of a member
+		Required Params:
+		string      id                            The ID or username of the member
+
+		`)
+auto listMemberSavedSearches(string id)
+{
+	import requests;
+	import std.uri: encode;
+	import std.array: array;
+	import std.format: format;
+
+	auto url = encode(format!`%s/1/members/%s/savedSearches`(trelloAPIURL,id));
+	Variable[string] queryParams;
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
+}
+
+@SILdoc(`Get a saved search
+		Required Params:
+		string      id                            The ID or username of the member
+
+		`)
+auto savedSearch(string id, string idSearch)
+{
+	import requests;
+	import std.uri: encode;
+	import std.array: array;
+	import std.format: format;
+
+	auto url = encode(format!`%s/1/members/%s/savedSearches/%s`(trelloAPIURL,id,idSearch));
+	Variable[string] queryParams;
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
+}
+
+@SILdoc(`Get a specific custom board background
+		Required Params:
+		string      id                            The ID or username of the member
+		string		idBackground				  The ID of the background
+
+		Query Params:
+		string      fields                        'all' or a comma-separated list of 'brightness',
+		                                          'fullSizeUrl', 'scaled', 'tile'
+
+`)
+auto specificCustomBoardBackground(string id, string idBackground, Variable[string] queryParams = (Variable[string]).init)
+{
+	import requests;
+	import std.uri: encode;
+	import std.array: array;
+	import std.format: format;
+
+	auto url = encode(format!`%s/1/members/%s/customBoardBackgrounds/%s`(trelloAPIURL,id,idBackground));
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
+}
+
+@SILdoc(`Set a member's custom board background
+		Required Params:
+		string      id                            The ID or username of the member
+		string		idBackground                  The ID of the custom board background
+
+		Query Params:
+		string      brightness                    One of: 'dark', 'light', 'unknown'
+		boolean     tile                          Whether to tile the background
+
+`)
+void putMembersCustomBoardBackgrounds(string id, string idBackground, Variable[string] queryParams = (Variable[string]).init)
+{
+	import requests;
+	import std.uri: encode;
+	import std.array: array;
+	import std.format: format;
+
+	auto url = encode(format!`%s/1/members/%s//customBoardBackgrounds/%s`(trelloAPIURL,id,idBackground));
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	Request().put(url,queryParams.queryParamMap);
+}
+
+
+
+
 
 private void registerHandlerHelper(ref Handlers handlers)
 {
@@ -156,11 +249,11 @@ private void registerHandlerHelper(ref Handlers handlers)
 		listsCards, members, membersActions, membersBoardBackgrounds, membersBoardStars,
 		membersBoards, membersBoardsInvited, membersCards, membersCustomEmoji,
 		membersNotifications, membersOrganizations, membersOrganizationsInvited,
-		membersTokens, notifications, notificationsBoard, notificationsCard,
-		notificationsList, notificationsMember, notificationsMemberCreator,
-		notificationsOrganization, organizations, organizationsActions,
-		organizationsBoards, organizationsExports, organizationsMembers,
-		organizationsMembersInvited, organizationsMemberships,
+		membersTokens, membersUploadedStickers, notifications, notificationsBoard,
+		notificationsCard, notificationsList, notificationsMember,
+		notificationsMemberCreator, notificationsOrganization, openCardsOnBoard,
+		organizations, organizationsActions, organizationsBoards, organizationsExports,
+		organizationsMembers, organizationsMembersInvited, organizationsMemberships,
 		organizationsNewBillableGuests, organizationsPluginData, organizationsTags,
 		postActionsReactions, postBoards, postBoardsBoardPlugins,
 		postBoardsCalendarKeyGenerate, postBoardsEmailKeyGenerate, postBoardsIdTags,
@@ -174,15 +267,15 @@ private void registerHandlerHelper(ref Handlers handlers)
 		postMembersBoardBackgrounds, postMembersBoardStars, postMembersCustomEmoji,
 		postMembersOneTimeMessagesDismissed, postNotificationsAllRead,
 		postOrganizations, postOrganizationsExports, postOrganizationsLogo,
-		postOrganizationsTags, postTokensWebhooks, postWebhooks, putActions,
-		putActionsText, putBoards, putBoardsMembers, putBoardsMemberships,
-		putBoardsMyPrefsEmailPosition, putBoardsMyPrefsIdEmailList,
-		putBoardsMyPrefsShowListGuide, putBoardsMyPrefsShowSidebar,
-		putBoardsMyPrefsShowSidebarActivity, putBoardsMyPrefsShowSidebarBoardActions,
-		putBoardsMyPrefsShowSidebarMembers, putCardCustomFieldItem, putCards,
-		putCardsActionsComments, putCardsCheckItem, putCardsChecklistCheckItem,
-		putCardsStickers, putChecklists, putChecklistsName, putCustomfields,
-		putEnterprisesAdmins, putEnterprisesMembersDeactivated,
+		postOrganizationsTags, postTokensWebhooks, postWebhooks,
+		postmembersUploadedStickers, putActions, putActionsText, putBoards,
+		putBoardsMembers, putBoardsMemberships, putBoardsMyPrefsEmailPosition,
+		putBoardsMyPrefsIdEmailList, putBoardsMyPrefsShowListGuide,
+		putBoardsMyPrefsShowSidebar, putBoardsMyPrefsShowSidebarActivity,
+		putBoardsMyPrefsShowSidebarBoardActions, putBoardsMyPrefsShowSidebarMembers,
+		putCardCustomFieldItem, putCards, putCardsActionsComments, putCardsCheckItem,
+		putCardsChecklistCheckItem, putCardsStickers, putChecklists, putChecklistsName,
+		putCustomfields, putEnterprisesAdmins, putEnterprisesMembersDeactivated,
 		putEnterprisesOrganizations, putLabels, putLabelsColor, putLabelsName, putLists,
 		putListsClosed, putListsIdBoard, putListsName, putListsPos, putListsSubscribed,
 		putMembers, putMembersBoardBackgrounds, putMembersBoardStars, putNotifications,
@@ -723,6 +816,28 @@ auto boardsLabels(string id, Variable[string] queryParams = (Variable[string]).i
 @SILdoc(`
 Required Params:
 string      id                            The ID of the board
+string      filter                        One of 'all', 'closed', 'none', 'open'
+
+`)
+auto boardsLists(string id, string filter)
+{
+	import requests;
+	import std.uri: encode;
+	import std.array: array;
+	import std.format: format;
+
+	auto url = encode(format!`%s/1/boards/%s/lists/%s`(trelloAPIURL,id,filter));
+	Variable[string] queryParams;
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            The ID of the board
 
 Query Params:
 string      cards                         One of: 'all', 'closed', 'none', 'open'
@@ -741,28 +856,6 @@ auto boardsLists(string id, Variable[string] queryParams = (Variable[string]).in
 	import std.format: format;
 
 	auto url = encode(format!`%s/1/boards/%s/lists`(trelloAPIURL,id));
-	queryParams["key"] = Variable(trelloSecret);
-	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
-	return result.asVariable;
-}
-
-
-@SILdoc(`
-Required Params:
-string      id                            The ID of the board
-string      filter                        One of 'all', 'closed', 'none', 'open'
-
-`)
-auto boardsLists(string id, string filter)
-{
-	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
-
-	auto url = encode(format!`%s/1/boards/%s/lists/%s`(trelloAPIURL,id,filter));
-	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
@@ -845,28 +938,6 @@ auto boardsPlugins(string id, Variable[string] queryParams = (Variable[string]).
 }
 
 
-@SILdoc(`Get a specific property of a card
-Required Params:
-string      id                            The id of the card
-string      field                         The desired field. One of [fields](ref:card-object)
-
-`)
-auto cards(string id, string field)
-{
-	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
-
-	auto url = encode(format!`%s/1/cards/%s/%s`(trelloAPIURL,id,field));
-	Variable[string] queryParams;
-	queryParams["key"] = Variable(trelloSecret);
-	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
-	return result.asVariable;
-}
-
-
 @SILdoc(`Get a card by its ID
 Required Params:
 string      id                            The ID of the card
@@ -917,6 +988,28 @@ auto cards(string id, Variable[string] queryParams = (Variable[string]).init)
 	import std.format: format;
 
 	auto url = encode(format!`%s/1/cards/%s`(trelloAPIURL,id));
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
+}
+
+
+@SILdoc(`Get a specific property of a card
+Required Params:
+string      id                            The id of the card
+string      field                         The desired field. One of [fields](ref:card-object)
+
+`)
+auto cards(string id, string field)
+{
+	import requests;
+	import std.uri: encode;
+	import std.array: array;
+	import std.format: format;
+
+	auto url = encode(format!`%s/1/cards/%s/%s`(trelloAPIURL,id,field));
+	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
@@ -2955,6 +3048,27 @@ auto membersTokens(string id, Variable[string] queryParams = (Variable[string]).
 }
 
 
+@SILdoc(`Get a member's uploaded stickers
+Required Params:
+string      id                            The ID or username of the member
+
+`)
+auto membersUploadedStickers(string id)
+{
+	import requests;
+	import std.uri: encode;
+	import std.array: array;
+	import std.format: format;
+
+	auto url = encode(format!`%s/1/members/%s/customStickers`(trelloAPIURL,id));
+	Variable[string] queryParams;
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
+}
+
+
 @SILdoc(`
 Required Params:
 string      id                            The ID of the notification
@@ -3156,6 +3270,27 @@ auto notificationsOrganization(string id, Variable[string] queryParams = (Variab
 	import std.format: format;
 
 	auto url = encode(format!`%s/1/notifications/%s/organization`(trelloAPIURL,id));
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
+}
+
+
+@SILdoc(`Fetch open cards on a board
+Required Params:
+string      id                            
+
+`)
+auto openCardsOnBoard(string id)
+{
+	import requests;
+	import std.uri: encode;
+	import std.array: array;
+	import std.format: format;
+
+	auto url = encode(format!`%s/1/boards/%s/cards`(trelloAPIURL,id));
+	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
@@ -4473,6 +4608,29 @@ auto postWebhooks(Variable[string] queryParams = (Variable[string]).init)
 }
 
 
+@SILdoc(`Upload a new custom sticker
+Required Params:
+string      id                            The ID or username of the member
+
+Query Params:
+file        file                          
+
+`)
+auto postmembersUploadedStickers(string id, Variable[string] queryParams = (Variable[string]).init)
+{
+	import requests;
+	import std.uri: encode;
+	import std.array: array;
+	import std.format: format;
+
+	auto url = encode(format!`%s/1/members/%s/customStickers`(trelloAPIURL,id));
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
+}
+
+
 @SILdoc(`Update a comment action
 Required Params:
 string      id                            The ID of the action to update
@@ -4564,6 +4722,32 @@ void putBoards(string id, Variable[string] queryParams = (Variable[string]).init
 }
 
 
+@SILdoc(`Add a member to the board.
+Required Params:
+string      id                            The id of the board to update
+string      idMember                      The id of the member to add to the board.
+
+Query Params:
+string      type                          One of: admin, normal, observer. Determines the type of
+                                          member this user will be on the board.
+boolean     allowBillableGuest            Optional param that allows organization admins to add
+                                          multi-board guests onto a board.
+
+`)
+void putBoardsMembers(string id, string idMember, Variable[string] queryParams = (Variable[string]).init)
+{
+	import requests;
+	import std.uri: encode;
+	import std.array: array;
+	import std.format: format;
+
+	auto url = encode(format!`%s/1/boards/%s/members/%s`(trelloAPIURL,id,idMember));
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	Request().put(url,queryParams.queryParamMap);
+}
+
+
 @SILdoc(`Update an existing board by id
 Required Params:
 string      id                            The id of the board to update
@@ -4588,32 +4772,6 @@ void putBoardsMembers(string id, string type, string fullName = null, Variable[s
 	import std.format: format;
 
 	auto url = encode(format!`%s/1/boards/%s/members`(trelloAPIURL,id));
-	queryParams["key"] = Variable(trelloSecret);
-	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
-}
-
-
-@SILdoc(`Add a member to the board.
-Required Params:
-string      id                            The id of the board to update
-string      idMember                      The id of the member to add to the board.
-
-Query Params:
-string      type                          One of: admin, normal, observer. Determines the type of
-                                          member this user will be on the board.
-boolean     allowBillableGuest            Optional param that allows organization admins to add
-                                          multi-board guests onto a board.
-
-`)
-void putBoardsMembers(string id, string idMember, Variable[string] queryParams = (Variable[string]).init)
-{
-	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
-
-	auto url = encode(format!`%s/1/boards/%s/members/%s`(trelloAPIURL,id,idMember));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	Request().put(url,queryParams.queryParamMap);

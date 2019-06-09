@@ -12,6 +12,7 @@ string[] blacklist = [	"boardsCards",
 						"membersCustomBoardBackgrounds",
 						"membersCustomStickers",
 						"putMembersCustomBoardBackgrounds",
+						"savedSearchFromId",
 ];
 
 int main(string[] args)
@@ -171,6 +172,16 @@ enum CodePrelude =
 q{
 module kaleidic.sil.std.extra.trello;
 
+/+
+	This file is generated automatically - do not edit or else your changes will be lost.
+
+	Example use from SIL:
+
+		trello.setSecrets()
+		a=trello.search({"query":"ALL","cards_limit":1000,"cards_page":1})
+		a.cards
++/
+
 import kaleidic.sil.lang.handlers:Handlers;
 import kaleidic.sil.lang.types: Variable, SILdoc;
 import requests: Request;
@@ -297,6 +308,99 @@ private Variable asVariable(string result)
 	import kaleidic.sil.std.core.util:dslParseJson;
 	return (result.length > 0 && result.isJson) ? dslParseJson(result) : Variable.init;
 }
+
+// FIXME - special cases
+
+
+@SILdoc(`List the saved searches of a member
+		Required Params:
+		string      id                            The ID or username of the member
+
+		`)
+auto listMemberSavedSearches(string id)
+{
+	import requests;
+	import std.uri: encode;
+	import std.array: array;
+	import std.format: format;
+
+	auto url = encode(format!`%s/1/members/%s/savedSearches`(trelloAPIURL,id));
+	Variable[string] queryParams;
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
+}
+
+@SILdoc(`Get a saved search
+		Required Params:
+		string      id                            The ID or username of the member
+
+		`)
+auto savedSearch(string id, string idSearch)
+{
+	import requests;
+	import std.uri: encode;
+	import std.array: array;
+	import std.format: format;
+
+	auto url = encode(format!`%s/1/members/%s/savedSearches/%s`(trelloAPIURL,id,idSearch));
+	Variable[string] queryParams;
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
+}
+
+@SILdoc(`Get a specific custom board background
+		Required Params:
+		string      id                            The ID or username of the member
+		string		idBackground				  The ID of the background
+
+		Query Params:
+		string      fields                        'all' or a comma-separated list of 'brightness',
+		                                          'fullSizeUrl', 'scaled', 'tile'
+
+`)
+auto specificCustomBoardBackground(string id, string idBackground, Variable[string] queryParams = (Variable[string]).init)
+{
+	import requests;
+	import std.uri: encode;
+	import std.array: array;
+	import std.format: format;
+
+	auto url = encode(format!`%s/1/members/%s/customBoardBackgrounds/%s`(trelloAPIURL,id,idBackground));
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
+}
+
+@SILdoc(`Set a member's custom board background
+		Required Params:
+		string      id                            The ID or username of the member
+		string		idBackground                  The ID of the custom board background
+
+		Query Params:
+		string      brightness                    One of: 'dark', 'light', 'unknown'
+		boolean     tile                          Whether to tile the background
+
+`)
+void putMembersCustomBoardBackgrounds(string id, string idBackground, Variable[string] queryParams = (Variable[string]).init)
+{
+	import requests;
+	import std.uri: encode;
+	import std.array: array;
+	import std.format: format;
+
+	auto url = encode(format!`%s/1/members/%s//customBoardBackgrounds/%s`(trelloAPIURL,id,idBackground));
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	Request().put(url,queryParams.queryParamMap);
+}
+
+
+
 
 };
 
@@ -563,15 +667,67 @@ struct ApiCall
 		Appender!string ret;
 
 		ret.put(method.toLower); // .replace("put","set").replace("post","set"));
-		auto tokens = swaggerPath.stripSwaggerParams.split("/"); // replace("s/{","/{").stripSwaggerParams.split("/");
-		if (tokens.length==0)
+
+		// special casing conflicts
+		switch(swaggerPath)
 		{
-			ret.put(slug.replace("-","_"));
-			return ret.data.removeGet();
-		}
-		foreach(token;tokens)
-		{
-			ret.put(token.capitalizeFirst);
+			/+
+			case "/members/{id}/savedSearches":
+				ret.put("listMemberSavedSearches");
+				break;
+
+			case "/members/{id}/savedSearches/{idSearch}":
+				ret.put("savedSearchFromId");
+				break;
+
+			case "/boards/{id}/customFields":
+				ret.put("customFieldDefinitionsOnBoard");
+				break;
++/	
+			case "/boards/{id}/cards":
+				ret.put("openCardsOnBoard");
+				break;
+
+			case "/boards/{id}/cards/{filter}":
+				ret.put("filteredCardsOnBoard");
+				break;
+			
+			case "/boards/{id}/cards/{cardId}":
+				ret.put("cardByID");
+				break;
+/+
+			case "/enterprises/{id}/organizations/{idOrganization}":
+				ret.put("OrganizationFromEnterprise");
+				break;
++/
+			case "/members/{id}/customBoardBackgrounds":
+				ret.put("membersCustomBoardBackgrounds");
+				break;
+/+
+			case "/members/{id}/customBoardBackgrounds/{idBackground}":
+				ret.put("specificCustomBoardBackground");
+				break;
++/
+			case "/members/{id}/customStickers":
+				ret.put("membersUploadedStickers");
+				break;
+/+
+			case "/members/{id}/customStickers/{idSticker}":
+				ret.put("uploadedSticker");
+				break;
++/
+			default:
+				auto tokens = swaggerPath.stripSwaggerParams.split("/"); // replace("s/{","/{").stripSwaggerParams.split("/");
+				if (tokens.length==0)
+				{
+					ret.put(slug.replace("-","_"));
+					return ret.data.removeGet();
+				}
+				foreach(token;tokens)
+				{
+					ret.put(token.capitalizeFirst);
+				}
+				break;
 		}
 		return ret.data.removeGet();
 	}
