@@ -306,8 +306,11 @@ private bool isJson(string result)
 
 private Variable asVariable(string result)
 {
-	import kaleidic.sil.std.core.util:dslParseJson;
-	return (result.length > 0 && result.isJson) ? dslParseJson(result) : Variable.init;
+	import asdf;
+	import kaleidic.sil.std.core.json : toVariable;
+	return (result.length > 0 && result.isJson)
+		? parseJson(result).toVariable()
+		: Variable.init;
 }
 
 // FIXME - special cases

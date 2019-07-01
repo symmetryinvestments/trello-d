@@ -134,8 +134,11 @@ private bool isJson(string result)
 
 private Variable asVariable(string result)
 {
-	import kaleidic.sil.std.core.util:dslParseJson;
-	return (result.length > 0 && result.isJson) ? dslParseJson(result) : Variable.init;
+	import asdf;
+	import kaleidic.sil.std.core.json : toVariable;
+	return (result.length > 0 && result.isJson)
+		? parseJson(result).toVariable()
+		: Variable.init;
 }
 
 // FIXME - special cases
@@ -287,11 +290,12 @@ private void registerHandlerHelper(ref Handlers handlers)
 		putCardsChecklistCheckItem, putCardsStickers, putChecklists, putChecklistsName,
 		putCustomfields, putEnterprisesAdmins, putEnterprisesMembersDeactivated,
 		putEnterprisesOrganizations, putLabels, putLabelsColor, putLabelsName, putLists,
-		putListsClosed, putListsIdBoard, putListsName, putListsPos, putListsSubscribed,
-		putMembers, putMembersBoardBackgrounds, putMembersBoardStars, putNotifications,
-		putNotificationsUnread, putOrganizations, putOrganizationsMembers,
-		putOrganizationsMembersDeactivated, putTokensWebhooks, putWebhooks, search,
-		searchMembers, tokens, tokensMember, tokensWebhooks, webhooks,
+		putListsClosed, putListsIdBoard, putListsName, putListsPos, putListsSoftLimit,
+		putListsSubscribed, putMembers, putMembersBoardBackgrounds,
+		putMembersBoardStars, putNotifications, putNotificationsUnread,
+		putOrganizations, putOrganizationsMembers, putOrganizationsMembersDeactivated,
+		putTokensWebhooks, putWebhooks, search, searchMembers, tokens, tokensMember,
+		tokensWebhooks, webhooks,
 	))
 	{
 		handlers.registerHandler!F;
@@ -3440,28 +3444,6 @@ auto organizationsMembers(string id)
 }
 
 
-@SILdoc(`
-Required Params:
-string      id                            The ID or name of the organization
-string      filter                        One of: 'all', 'admins', 'normal'
-
-`)
-auto organizationsMembers(string id, string filter)
-{
-	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
-
-	auto url = encode(format!`%s/1/organizations/%s/members/%s`(trelloAPIURL,id,filter));
-	Variable[string] queryParams;
-	queryParams["key"] = Variable(trelloSecret);
-	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
-	return result.asVariable;
-}
-
-
 @SILdoc(`List the members with pending invites to a team
 Required Params:
 string      id                            The ID or name of the organization
@@ -3489,6 +3471,30 @@ auto organizationsMembersInvited(string id, Variable[string] queryParams = (Vari
 @SILdoc(`List the memberships of a team
 Required Params:
 string      id                            The ID or name of the organization
+string      idMembership                  The ID of the membership to load
+
+Query Params:
+boolean     member                        Whether to include the member object in the response
+
+`)
+auto organizationsMemberships(string id, string idMembership, Variable[string] queryParams = (Variable[string]).init)
+{
+	import requests;
+	import std.uri: encode;
+	import std.array: array;
+	import std.format: format;
+
+	auto url = encode(format!`%s/1/organizations/%s/memberships/%s`(trelloAPIURL,id,idMembership));
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
+}
+
+
+@SILdoc(`List the memberships of a team
+Required Params:
+string      id                            The ID or name of the organization
 
 Query Params:
 string      filter                        'all' or a comma-separated list of: 'active', 'admin',
@@ -3504,30 +3510,6 @@ auto organizationsMemberships(string id, Variable[string] queryParams = (Variabl
 	import std.format: format;
 
 	auto url = encode(format!`%s/1/organizations/%s/memberships`(trelloAPIURL,id));
-	queryParams["key"] = Variable(trelloSecret);
-	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
-	return result.asVariable;
-}
-
-
-@SILdoc(`List the memberships of a team
-Required Params:
-string      id                            The ID or name of the organization
-string      idMembership                  The ID of the membership to load
-
-Query Params:
-boolean     member                        Whether to include the member object in the response
-
-`)
-auto organizationsMemberships(string id, string idMembership, Variable[string] queryParams = (Variable[string]).init)
-{
-	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
-
-	auto url = encode(format!`%s/1/organizations/%s/memberships/%s`(trelloAPIURL,id,idMembership));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
@@ -4732,32 +4714,6 @@ void putBoards(string id, Variable[string] queryParams = (Variable[string]).init
 }
 
 
-@SILdoc(`Add a member to the board.
-Required Params:
-string      id                            The id of the board to update
-string      idMember                      The id of the member to add to the board.
-
-Query Params:
-string      type                          One of: admin, normal, observer. Determines the type of
-                                          member this user will be on the board.
-boolean     allowBillableGuest            Optional param that allows organization admins to add
-                                          multi-board guests onto a board.
-
-`)
-void putBoardsMembers(string id, string idMember, Variable[string] queryParams = (Variable[string]).init)
-{
-	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
-
-	auto url = encode(format!`%s/1/boards/%s/members/%s`(trelloAPIURL,id,idMember));
-	queryParams["key"] = Variable(trelloSecret);
-	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
-}
-
-
 @SILdoc(`Update an existing board by id
 Required Params:
 string      id                            The id of the board to update
@@ -4782,6 +4738,32 @@ void putBoardsMembers(string id, string type, string fullName = null, Variable[s
 	import std.format: format;
 
 	auto url = encode(format!`%s/1/boards/%s/members`(trelloAPIURL,id));
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	Request().put(url,queryParams.queryParamMap);
+}
+
+
+@SILdoc(`Add a member to the board.
+Required Params:
+string      id                            The id of the board to update
+string      idMember                      The id of the member to add to the board.
+
+Query Params:
+string      type                          One of: admin, normal, observer. Determines the type of
+                                          member this user will be on the board.
+boolean     allowBillableGuest            Optional param that allows organization admins to add
+                                          multi-board guests onto a board.
+
+`)
+void putBoardsMembers(string id, string idMember, Variable[string] queryParams = (Variable[string]).init)
+{
+	import requests;
+	import std.uri: encode;
+	import std.array: array;
+	import std.format: format;
+
+	auto url = encode(format!`%s/1/boards/%s/members/%s`(trelloAPIURL,id,idMember));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	Request().put(url,queryParams.queryParamMap);
@@ -5456,6 +5438,29 @@ void putListsPos(string id, Variable[string] queryParams = (Variable[string]).in
 	import std.format: format;
 
 	auto url = encode(format!`%s/1/lists/%s/pos`(trelloAPIURL,id));
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	Request().put(url,queryParams.queryParamMap);
+}
+
+
+@SILdoc(`Set a soft limit for number of cards in the list
+Required Params:
+string      id                            The ID of the list
+
+Query Params:
+int         value                         A number between '0' and '5000' or empty to remove the
+                                          limit
+
+`)
+void putListsSoftLimit(string id, Variable[string] queryParams = (Variable[string]).init)
+{
+	import requests;
+	import std.uri: encode;
+	import std.array: array;
+	import std.format: format;
+
+	auto url = encode(format!`%s/1/lists/%s/softLimit`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	Request().put(url,queryParams.queryParamMap);
