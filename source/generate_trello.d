@@ -190,6 +190,26 @@ import requests: Request;
 shared string trelloAPIURL = "https://api.trello.com";
 shared string trelloSecret, trelloAuth;
 
+version (Windows)
+{
+        immutable string caCertPath;
+
+        shared static this()
+        {
+                import std.file : thisExePath;
+                import std.path : buildPath, dirName;
+
+                caCertPath = dirName(thisExePath).buildPath("cacert.pem");
+        }
+
+        auto newRequest()
+        {
+                auto req = Request();
+                req.sslSetCaCert(caCertPath);
+                return req;
+	}
+}
+
 void registerTrello(Handlers handlers)
 {
 	import std.meta:AliasSeq;
@@ -332,7 +352,7 @@ auto listMemberSavedSearches(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -352,7 +372,7 @@ auto savedSearch(string id, string idSearch)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -376,7 +396,7 @@ auto specificCustomBoardBackground(string id, string idBackground, Variable[stri
 	auto url = encode(format!`%s/1/members/%s/customBoardBackgrounds/%s`(trelloAPIURL,id,idBackground));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -400,7 +420,7 @@ void putMembersCustomBoardBackgrounds(string id, string idBackground, Variable[s
 	auto url = encode(format!`%s/1/members/%s//customBoardBackgrounds/%s`(trelloAPIURL,id,idBackground));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -455,8 +475,8 @@ string generateRestCall(ApiCall call)
 	ret.put(q{	queryParams["key"] = Variable(trelloSecret);} ~ "\n");
 	ret.put(q{	queryParams["token"] = Variable(trelloAuth);} ~ "\n");
 	ret.put(!call.hasReturn ?
-			format!"	Request().%s(url,%s);\n"(call.method,"queryParams.queryParamMap") :
-			format!"	auto result = cast(string) (Request().%s(url,%s).responseBody.array);\n"(call.method,"queryParams.queryParamMap")
+			format!"	newRequest().%s(url,%s);\n"(call.method,"queryParams.queryParamMap") :
+			format!"	auto result = cast(string) (newRequest().%s(url,%s).responseBody.array);\n"(call.method,"queryParams.queryParamMap")
 	);
 	return ret.data;
 }
