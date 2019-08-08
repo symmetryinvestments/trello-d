@@ -18,7 +18,27 @@ import requests: Request;
 shared string trelloAPIURL = "https://api.trello.com";
 shared string trelloSecret, trelloAuth;
 
-void registerTrello(Handlers handlers)
+version (Windows)
+{
+	immutable string caCertPath;
+
+	shared static this()
+	{
+		import std.file : thisExePath;
+		import std.path : buildPath, dirName;
+
+		caCertPath = dirName(thisExePath).buildPath("cacert.pem");
+	}
+
+	auto newRequest()
+	{
+		auto req = Request();
+		req.sslSetCaCert(caCertPath);
+		return req;
+	}
+}
+
+void registerTrello(ref Handlers handlers)
 {
 	import std.meta:AliasSeq;
 	handlers.openModule("trello");
@@ -160,7 +180,7 @@ auto listMemberSavedSearches(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -180,7 +200,7 @@ auto savedSearch(string id, string idSearch)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -204,7 +224,7 @@ auto specificCustomBoardBackground(string id, string idBackground, Variable[stri
 	auto url = encode(format!`%s/1/members/%s/customBoardBackgrounds/%s`(trelloAPIURL,id,idBackground));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -228,7 +248,7 @@ void putMembersCustomBoardBackgrounds(string id, string idBackground, Variable[s
 	auto url = encode(format!`%s/1/members/%s//customBoardBackgrounds/%s`(trelloAPIURL,id,idBackground));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -330,7 +350,7 @@ auto actions(string id, Variable[string] queryParams = (Variable[string]).init)
 	auto url = encode(format!`%s/1/actions/%s`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -352,7 +372,7 @@ auto actions(string id, string field)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -376,7 +396,7 @@ auto actionsBoard(string id, Variable[string] queryParams = (Variable[string]).i
 	auto url = encode(format!`%s/1/actions/%s/board`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -400,7 +420,7 @@ auto actionsCard(string id, Variable[string] queryParams = (Variable[string]).in
 	auto url = encode(format!`%s/1/actions/%s/card`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -421,7 +441,7 @@ auto actionsDisplay(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -445,7 +465,7 @@ auto actionsList(string id, Variable[string] queryParams = (Variable[string]).in
 	auto url = encode(format!`%s/1/actions/%s/list`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -469,7 +489,7 @@ auto actionsMember(string id, Variable[string] queryParams = (Variable[string]).
 	auto url = encode(format!`%s/1/actions/%s/member`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -493,7 +513,7 @@ auto actionsMemberCreator(string id, Variable[string] queryParams = (Variable[st
 	auto url = encode(format!`%s/1/actions/%s/memberCreator`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -517,7 +537,7 @@ auto actionsOrganization(string id, Variable[string] queryParams = (Variable[str
 	auto url = encode(format!`%s/1/actions/%s/organization`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -542,7 +562,7 @@ auto actionsReactions(string idAction, Variable[string] queryParams = (Variable[
 	auto url = encode(format!`%s/1/actions/%s/reactions`(trelloAPIURL,idAction));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -568,7 +588,7 @@ auto actionsReactions(string idAction, string id, Variable[string] queryParams =
 	auto url = encode(format!`%s/1/actions/%s/reactions/%s`(trelloAPIURL,idAction,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -589,7 +609,7 @@ auto actionsReactionsSummary(string idAction)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -612,7 +632,7 @@ auto batch(Variable[string] queryParams = (Variable[string]).init)
 	auto url = encode(format!`%s/1/batch`(trelloAPIURL));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -684,7 +704,7 @@ auto boards(string id, Variable[string] queryParams = (Variable[string]).init)
 	auto url = encode(format!`%s/1/boards/%s`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -710,7 +730,7 @@ auto boards(string id, string field)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -731,7 +751,7 @@ auto boardsActions(string boardId)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -752,7 +772,7 @@ auto boardsBoardPlugins(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -776,7 +796,7 @@ auto boardsBoardStars(string boardId, string filter = null)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -797,7 +817,7 @@ auto boardsChecklists(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -822,7 +842,7 @@ auto boardsLabels(string id, Variable[string] queryParams = (Variable[string]).i
 	auto url = encode(format!`%s/1/boards/%s/labels`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -844,7 +864,7 @@ auto boardsLists(string id, string filter)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -872,7 +892,7 @@ auto boardsLists(string id, Variable[string] queryParams = (Variable[string]).in
 	auto url = encode(format!`%s/1/boards/%s/lists`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -893,7 +913,7 @@ auto boardsMembers(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -924,7 +944,7 @@ auto boardsMemberships(string id, Variable[string] queryParams = (Variable[strin
 	auto url = encode(format!`%s/1/boards/%s/memberships`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -947,7 +967,7 @@ auto boardsPlugins(string id, Variable[string] queryParams = (Variable[string]).
 	auto url = encode(format!`%s/1/boards/%s/plugins`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -1004,7 +1024,7 @@ auto cards(string id, Variable[string] queryParams = (Variable[string]).init)
 	auto url = encode(format!`%s/1/cards/%s`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -1026,7 +1046,7 @@ auto cards(string id, string field)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -1047,7 +1067,7 @@ auto cardsActions(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -1072,7 +1092,7 @@ auto cardsAttachments(string id, string idAttachment, Variable[string] queryPara
 	auto url = encode(format!`%s/1/cards/%s/attachments/%s`(trelloAPIURL,id,idAttachment));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -1098,7 +1118,7 @@ auto cardsAttachments(string id, string fields = null, string filter = null)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -1122,7 +1142,7 @@ auto cardsBoard(string id, Variable[string] queryParams = (Variable[string]).ini
 	auto url = encode(format!`%s/1/cards/%s/board`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -1147,7 +1167,7 @@ auto cardsCheckItem(string id, string idCheckItem, Variable[string] queryParams 
 	auto url = encode(format!`%s/1/cards/%s/checkItem/%s`(trelloAPIURL,id,idCheckItem));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -1170,7 +1190,7 @@ auto cardsCheckItemStates(string id, Variable[string] queryParams = (Variable[st
 	auto url = encode(format!`%s/1/cards/%s/checkItemStates`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -1198,7 +1218,7 @@ auto cardsChecklists(string id, Variable[string] queryParams = (Variable[string]
 	auto url = encode(format!`%s/1/cards/%s/checklists`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -1219,7 +1239,7 @@ auto cardsCustomFieldItems(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -1243,7 +1263,7 @@ auto cardsList(string id, Variable[string] queryParams = (Variable[string]).init
 	auto url = encode(format!`%s/1/cards/%s/list`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -1267,7 +1287,7 @@ auto cardsMembers(string id, Variable[string] queryParams = (Variable[string]).i
 	auto url = encode(format!`%s/1/cards/%s/members`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -1291,7 +1311,7 @@ auto cardsMembersVoted(string id, Variable[string] queryParams = (Variable[strin
 	auto url = encode(format!`%s/1/cards/%s/membersVoted`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -1312,7 +1332,7 @@ auto cardsPluginData(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -1337,7 +1357,7 @@ auto cardsStickers(string id, string idSticker, Variable[string] queryParams = (
 	auto url = encode(format!`%s/1/cards/%s/stickers/%s`(trelloAPIURL,id,idSticker));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -1361,7 +1381,7 @@ auto cardsStickers(string id, Variable[string] queryParams = (Variable[string]).
 	auto url = encode(format!`%s/1/cards/%s/stickers`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -1383,7 +1403,7 @@ auto checklists(string id, string field)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -1416,7 +1436,7 @@ auto checklists(string id, Variable[string] queryParams = (Variable[string]).ini
 	auto url = encode(format!`%s/1/checklists/%s`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -1440,7 +1460,7 @@ auto checklistsBoard(string id, Variable[string] queryParams = (Variable[string]
 	auto url = encode(format!`%s/1/checklists/%s/board`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -1461,7 +1481,7 @@ auto checklistsCards(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -1485,7 +1505,7 @@ auto checklistsCheckItems(string id, Variable[string] queryParams = (Variable[st
 	auto url = encode(format!`%s/1/checklists/%s/checkItems`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -1509,7 +1529,7 @@ auto checklistsCheckItems(string id, string idCheckItem, Variable[string] queryP
 	auto url = encode(format!`%s/1/checklists/%s/checkItems/%s`(trelloAPIURL,id,idCheckItem));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -1530,7 +1550,7 @@ auto customFieldsOptions(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -1552,7 +1572,7 @@ auto customFieldsOptions(string id, string idCustomFieldOption)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -1573,7 +1593,7 @@ auto custom_fields_object(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -1594,7 +1614,7 @@ auto customfields(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -1615,7 +1635,7 @@ void delActions(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -1636,7 +1656,7 @@ void delActionsReactions(string idAction, string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -1656,7 +1676,7 @@ void delBoards(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -1677,7 +1697,7 @@ void delBoardsBoardPlugins(string id, string idPlugin)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -1699,7 +1719,7 @@ void delBoardsMembers(string id, string idMember)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -1721,7 +1741,7 @@ void delBoardsPowerUps(string id, string powerUp)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -1741,7 +1761,7 @@ void delCards(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -1762,7 +1782,7 @@ void delCardsActionsComments(string id, string idAction)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -1783,7 +1803,7 @@ void delCardsAttachments(string id, string idAttachment)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -1804,7 +1824,7 @@ void delCardsCheckItem(string id, string idCheckItem)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -1825,7 +1845,7 @@ void delCardsChecklists(string id, string idChecklist)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -1846,7 +1866,7 @@ void delCardsIdLabels(string id, string idLabel)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -1867,7 +1887,7 @@ void delCardsIdMembers(string id, string idMember)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -1888,7 +1908,7 @@ void delCardsMembersVoted(string id, string idMember)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -1909,7 +1929,7 @@ void delCardsStickers(string id, string idSticker)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -1929,7 +1949,7 @@ void delChecklists(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -1950,7 +1970,7 @@ void delChecklistsCheckItems(string id, string idCheckItem)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -1970,7 +1990,7 @@ void delCustomfields(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -1991,7 +2011,7 @@ void delCustomfieldsOptions(string id, string idCustomFieldOption)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -2011,7 +2031,7 @@ void delLabels(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -2032,7 +2052,7 @@ void delMembersBoardBackgrounds(string id, string idBackground)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -2053,7 +2073,7 @@ void delMembersBoardStars(string id, string idStar)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -2073,7 +2093,7 @@ void delOrganizations(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -2093,7 +2113,7 @@ void delOrganizationsLogo(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -2114,7 +2134,7 @@ void delOrganizationsMembers(string id, string idMember)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -2135,7 +2155,7 @@ void delOrganizationsMembersAll(string id, string idMember)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -2155,7 +2175,7 @@ void delOrganizationsPrefsAssociatedDomain(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -2175,7 +2195,7 @@ void delOrganizationsPrefsOrgInviteRestrict(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -2196,7 +2216,7 @@ void delOrganizationsTags(string id, string idTag)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -2216,7 +2236,7 @@ void delTokens(string token)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -2237,7 +2257,7 @@ void delTokensWebhooks(string token, string idWebhook)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -2257,7 +2277,7 @@ void delWebhooks(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().del(url,queryParams.queryParamMap);
+	newRequest().del(url,queryParams.queryParamMap);
 }
 
 
@@ -2278,7 +2298,7 @@ auto emoji(Variable[string] queryParams = (Variable[string]).init)
 	auto url = encode(format!`%s/1/emoji`(trelloAPIURL));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -2343,7 +2363,7 @@ auto enterprises(string id, Variable[string] queryParams = (Variable[string]).in
 	auto url = encode(format!`%s/1/enterprises/%s`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -2367,7 +2387,7 @@ auto enterprisesAdmins(string id, Variable[string] queryParams = (Variable[strin
 	auto url = encode(format!`%s/1/enterprises/%s/admins`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -2398,7 +2418,7 @@ auto enterprisesMembers(string id, string idMember, Variable[string] queryParams
 	auto url = encode(format!`%s/1/enterprises/%s/members/%s`(trelloAPIURL,id,idMember));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -2454,7 +2474,7 @@ auto enterprisesMembers(string id, Variable[string] queryParams = (Variable[stri
 	auto url = encode(format!`%s/1/enterprises/%s/members`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -2482,7 +2502,7 @@ auto enterprisesSignupUrl(string id, Variable[string] queryParams = (Variable[st
 	auto url = encode(format!`%s/1/enterprises/%s/signupUrl`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -2504,7 +2524,7 @@ auto enterprisesTransferrableOrganization(string id, string idOrganization)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -2527,7 +2547,7 @@ auto labels(string id, Variable[string] queryParams = (Variable[string]).init)
 	auto url = encode(format!`%s/1/labels/%s`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -2549,7 +2569,7 @@ auto lists(string id, string field)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -2572,7 +2592,7 @@ auto lists(string id, Variable[string] queryParams = (Variable[string]).init)
 	auto url = encode(format!`%s/1/lists/%s`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -2593,7 +2613,7 @@ auto listsActions(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -2617,7 +2637,7 @@ auto listsBoard(string id, Variable[string] queryParams = (Variable[string]).ini
 	auto url = encode(format!`%s/1/lists/%s/board`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -2638,7 +2658,7 @@ auto listsCards(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -2660,7 +2680,7 @@ auto members(string id, string field)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -2711,7 +2731,7 @@ auto members(string id, Variable[string] queryParams = (Variable[string]).init)
 	auto url = encode(format!`%s/1/members/%s`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -2732,7 +2752,7 @@ auto membersActions(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -2757,7 +2777,7 @@ auto membersBoardBackgrounds(string id, string idBackground, Variable[string] qu
 	auto url = encode(format!`%s/1/members/%s/boardBackgrounds/%s`(trelloAPIURL,id,idBackground));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -2780,7 +2800,7 @@ auto membersBoardBackgrounds(string id, Variable[string] queryParams = (Variable
 	auto url = encode(format!`%s/1/members/%s/boardBackgrounds`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -2802,7 +2822,7 @@ auto membersBoardStars(string id, string idStar)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -2823,7 +2843,7 @@ auto membersBoardStars(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -2856,7 +2876,7 @@ auto membersBoards(string id, Variable[string] queryParams = (Variable[string]).
 	auto url = encode(format!`%s/1/members/%s/boards`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -2880,7 +2900,7 @@ auto membersBoardsInvited(string id, Variable[string] queryParams = (Variable[st
 	auto url = encode(format!`%s/1/members/%s/boardsInvited`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -2903,7 +2923,7 @@ auto membersCards(string id, Variable[string] queryParams = (Variable[string]).i
 	auto url = encode(format!`%s/1/members/%s/cards`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -2924,7 +2944,7 @@ auto membersCustomEmoji(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -2948,7 +2968,7 @@ auto membersCustomEmoji(string id, string idEmoji, Variable[string] queryParams 
 	auto url = encode(format!`%s/1/members/%s/customEmoji/%s`(trelloAPIURL,id,idEmoji));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -2983,7 +3003,7 @@ auto membersNotifications(string id, Variable[string] queryParams = (Variable[st
 	auto url = encode(format!`%s/1/members/%s/notifications`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3010,7 +3030,7 @@ auto membersOrganizations(string id, Variable[string] queryParams = (Variable[st
 	auto url = encode(format!`%s/1/members/%s/organizations`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3034,7 +3054,7 @@ auto membersOrganizationsInvited(string id, Variable[string] queryParams = (Vari
 	auto url = encode(format!`%s/1/members/%s/organizationsInvited`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3057,7 +3077,7 @@ auto membersTokens(string id, Variable[string] queryParams = (Variable[string]).
 	auto url = encode(format!`%s/1/members/%s/tokens`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3078,7 +3098,7 @@ auto membersUploadedStickers(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3120,7 +3140,7 @@ auto notifications(string id, Variable[string] queryParams = (Variable[string]).
 	auto url = encode(format!`%s/1/notifications/%s`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3142,7 +3162,7 @@ auto notifications(string id, string field)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3166,7 +3186,7 @@ auto notificationsBoard(string id, Variable[string] queryParams = (Variable[stri
 	auto url = encode(format!`%s/1/notifications/%s/board`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3190,7 +3210,7 @@ auto notificationsCard(string id, Variable[string] queryParams = (Variable[strin
 	auto url = encode(format!`%s/1/notifications/%s/card`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3214,7 +3234,7 @@ auto notificationsList(string id, Variable[string] queryParams = (Variable[strin
 	auto url = encode(format!`%s/1/notifications/%s/list`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3238,7 +3258,7 @@ auto notificationsMember(string id, Variable[string] queryParams = (Variable[str
 	auto url = encode(format!`%s/1/notifications/%s/member`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3262,7 +3282,7 @@ auto notificationsMemberCreator(string id, Variable[string] queryParams = (Varia
 	auto url = encode(format!`%s/1/notifications/%s/memberCreator`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3286,7 +3306,7 @@ auto notificationsOrganization(string id, Variable[string] queryParams = (Variab
 	auto url = encode(format!`%s/1/notifications/%s/organization`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3307,7 +3327,7 @@ auto openCardsOnBoard(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3329,7 +3349,7 @@ auto organizations(string id, string field)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3350,7 +3370,7 @@ auto organizations(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3371,7 +3391,7 @@ auto organizationsActions(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3397,7 +3417,7 @@ auto organizationsBoards(string id, Variable[string] queryParams = (Variable[str
 	auto url = encode(format!`%s/1/organizations/%s/boards`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3418,7 +3438,7 @@ auto organizationsExports(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3439,7 +3459,7 @@ auto organizationsMembers(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3463,7 +3483,7 @@ auto organizationsMembersInvited(string id, Variable[string] queryParams = (Vari
 	auto url = encode(format!`%s/1/organizations/%s/membersInvited`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3487,7 +3507,7 @@ auto organizationsMemberships(string id, string idMembership, Variable[string] q
 	auto url = encode(format!`%s/1/organizations/%s/memberships/%s`(trelloAPIURL,id,idMembership));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3512,7 +3532,7 @@ auto organizationsMemberships(string id, Variable[string] queryParams = (Variabl
 	auto url = encode(format!`%s/1/organizations/%s/memberships`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3534,7 +3554,7 @@ auto organizationsNewBillableGuests(string id, string idBoard)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3555,7 +3575,7 @@ auto organizationsPluginData(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3576,7 +3596,7 @@ auto organizationsTags(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3607,7 +3627,7 @@ auto postActionsReactions(string idAction, string shortName = null, string skinV
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3654,7 +3674,7 @@ auto postBoards(Variable[string] queryParams = (Variable[string]).init)
 	auto url = encode(format!`%s/1/boards/`(trelloAPIURL));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3677,7 +3697,7 @@ auto postBoardsBoardPlugins(string id, Variable[string] queryParams = (Variable[
 	auto url = encode(format!`%s/1/boards/%s/boardPlugins`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3698,7 +3718,7 @@ auto postBoardsCalendarKeyGenerate(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3719,7 +3739,7 @@ auto postBoardsEmailKeyGenerate(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3743,7 +3763,7 @@ auto postBoardsIdTags(string id, Variable[string] queryParams = (Variable[string
 	auto url = encode(format!`%s/1/boards/%s/idTags`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3769,7 +3789,7 @@ auto postBoardsLabels(string id, Variable[string] queryParams = (Variable[string
 	auto url = encode(format!`%s/1/boards/%s/labels`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3795,7 +3815,7 @@ auto postBoardsLists(string id, Variable[string] queryParams = (Variable[string]
 	auto url = encode(format!`%s/1/boards/%s/lists`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3816,7 +3836,7 @@ auto postBoardsMarkedAsViewed(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3840,7 +3860,7 @@ auto postBoardsPowerUps(string id, Variable[string] queryParams = (Variable[stri
 	auto url = encode(format!`%s/1/boards/%s/powerUps`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3862,6 +3882,10 @@ string      idCardSource                  The ID of a card to copy into the new 
 string      keepFromSource                If using 'idCardSource' you can specify which properties to
                                           copy over. 'all' or comma-separated list of:
                                           'attachments,checklists,comments,due,labels,members,stickers'
+string      address                       For use with/by the Map Power-Up
+string      locationName                  For use with/by the Map Power-Up
+string      coordinates                   For use with/by the Map Power-Up. Should take the form
+                                          latitude,longitude
 
 `)
 auto postCards(Variable[string] queryParams = (Variable[string]).init)
@@ -3874,7 +3898,7 @@ auto postCards(Variable[string] queryParams = (Variable[string]).init)
 	auto url = encode(format!`%s/1/cards`(trelloAPIURL));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3897,7 +3921,7 @@ auto postCardsActionsComments(string id, Variable[string] queryParams = (Variabl
 	auto url = encode(format!`%s/1/cards/%s/actions/comments`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3923,7 +3947,7 @@ auto postCardsAttachments(string id, Variable[string] queryParams = (Variable[st
 	auto url = encode(format!`%s/1/cards/%s/attachments`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3949,7 +3973,7 @@ auto postCardsChecklists(string id, Variable[string] queryParams = (Variable[str
 	auto url = encode(format!`%s/1/cards/%s/checklists`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3972,7 +3996,7 @@ auto postCardsIdLabels(string id, Variable[string] queryParams = (Variable[strin
 	auto url = encode(format!`%s/1/cards/%s/idLabels`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -3995,7 +4019,7 @@ auto postCardsIdMembers(string id, Variable[string] queryParams = (Variable[stri
 	auto url = encode(format!`%s/1/cards/%s/idMembers`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -4020,7 +4044,7 @@ auto postCardsLabels(string id, Variable[string] queryParams = (Variable[string]
 	auto url = encode(format!`%s/1/cards/%s/labels`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -4041,7 +4065,7 @@ auto postCardsMarkAssociatedNotificationsRead(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -4064,7 +4088,7 @@ auto postCardsMembersVoted(string id, Variable[string] queryParams = (Variable[s
 	auto url = encode(format!`%s/1/cards/%s/membersVoted`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -4093,7 +4117,7 @@ auto postCardsStickers(string id, Variable[string] queryParams = (Variable[strin
 	auto url = encode(format!`%s/1/cards/%s/stickers`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -4118,7 +4142,7 @@ auto postChecklists(Variable[string] queryParams = (Variable[string]).init)
 	auto url = encode(format!`%s/1/checklists`(trelloAPIURL));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -4146,7 +4170,7 @@ auto postChecklistsCheckItems(string id, Variable[string] queryParams = (Variabl
 	auto url = encode(format!`%s/1/checklists/%s/checkItems`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -4178,7 +4202,7 @@ auto postCustomFields(string idModel, string modelType, string name, string type
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -4199,7 +4223,7 @@ auto postCustomFieldsOptions(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -4222,7 +4246,7 @@ auto postEnterprisesTokens(string id, Variable[string] queryParams = (Variable[s
 	auto url = encode(format!`%s/1/enterprises/%s/tokens`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -4245,7 +4269,7 @@ auto postLabels(Variable[string] queryParams = (Variable[string]).init)
 	auto url = encode(format!`%s/1/labels`(trelloAPIURL));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -4269,7 +4293,7 @@ auto postLists(Variable[string] queryParams = (Variable[string]).init)
 	auto url = encode(format!`%s/1/lists`(trelloAPIURL));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -4290,7 +4314,7 @@ auto postListsArchiveAllCards(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -4314,7 +4338,7 @@ auto postListsMoveAllCards(string id, Variable[string] queryParams = (Variable[s
 	auto url = encode(format!`%s/1/lists/%s/moveAllCards`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -4337,7 +4361,7 @@ auto postMembersAvatar(string id, Variable[string] queryParams = (Variable[strin
 	auto url = encode(format!`%s/1/members/%s/avatar`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -4360,7 +4384,7 @@ auto postMembersBoardBackgrounds(string id, Variable[string] queryParams = (Vari
 	auto url = encode(format!`%s/1/members/%s/boardBackgrounds`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -4385,7 +4409,7 @@ auto postMembersBoardStars(string id, Variable[string] queryParams = (Variable[s
 	auto url = encode(format!`%s/1/members/%s/boardStars`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -4409,7 +4433,7 @@ auto postMembersCustomEmoji(string id, Variable[string] queryParams = (Variable[
 	auto url = encode(format!`%s/1/members/%s/customEmoji`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -4432,7 +4456,7 @@ auto postMembersOneTimeMessagesDismissed(string id, Variable[string] queryParams
 	auto url = encode(format!`%s/1/members/%s/oneTimeMessagesDismissed`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -4450,7 +4474,7 @@ auto postNotificationsAllRead()
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -4475,7 +4499,7 @@ auto postOrganizations(Variable[string] queryParams = (Variable[string]).init)
 	auto url = encode(format!`%s/1/organizations`(trelloAPIURL));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -4498,7 +4522,7 @@ auto postOrganizationsExports(string id, Variable[string] queryParams = (Variabl
 	auto url = encode(format!`%s/1/organizations/%s/exports`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -4521,7 +4545,7 @@ auto postOrganizationsLogo(string id, Variable[string] queryParams = (Variable[s
 	auto url = encode(format!`%s/1/organizations/%s/logo`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -4544,7 +4568,7 @@ auto postOrganizationsTags(string id, Variable[string] queryParams = (Variable[s
 	auto url = encode(format!`%s/1/organizations/%s/tags`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -4570,7 +4594,7 @@ auto postTokensWebhooks(string token, Variable[string] queryParams = (Variable[s
 	auto url = encode(format!`%s/1/tokens/%s/webhooks`(trelloAPIURL,token));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -4595,7 +4619,7 @@ auto postWebhooks(Variable[string] queryParams = (Variable[string]).init)
 	auto url = encode(format!`%s/1/webhooks/`(trelloAPIURL));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -4618,7 +4642,7 @@ auto postmembersUploadedStickers(string id, Variable[string] queryParams = (Vari
 	auto url = encode(format!`%s/1/members/%s/customStickers`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().post(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -4641,7 +4665,7 @@ void putActions(string id, Variable[string] queryParams = (Variable[string]).ini
 	auto url = encode(format!`%s/1/actions/%s`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -4663,7 +4687,7 @@ void putActionsText(string id, Variable[string] queryParams = (Variable[string])
 	auto url = encode(format!`%s/1/actions/%s/text`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -4710,7 +4734,7 @@ void putBoards(string id, Variable[string] queryParams = (Variable[string]).init
 	auto url = encode(format!`%s/1/boards/%s`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -4740,7 +4764,7 @@ void putBoardsMembers(string id, string type, string fullName = null, Variable[s
 	auto url = encode(format!`%s/1/boards/%s/members`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -4766,7 +4790,7 @@ void putBoardsMembers(string id, string idMember, Variable[string] queryParams =
 	auto url = encode(format!`%s/1/boards/%s/members/%s`(trelloAPIURL,id,idMember));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -4793,7 +4817,7 @@ void putBoardsMemberships(string id, string idMembership, Variable[string] query
 	auto url = encode(format!`%s/1/boards/%s/memberships/%s`(trelloAPIURL,id,idMembership));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -4816,7 +4840,7 @@ void putBoardsMyPrefsEmailPosition(string id, Variable[string] queryParams = (Va
 	auto url = encode(format!`%s/1/boards/%s/myPrefs/emailPosition`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -4838,7 +4862,7 @@ void putBoardsMyPrefsIdEmailList(string id, Variable[string] queryParams = (Vari
 	auto url = encode(format!`%s/1/boards/%s/myPrefs/idEmailList`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -4860,7 +4884,7 @@ void putBoardsMyPrefsShowListGuide(string id, Variable[string] queryParams = (Va
 	auto url = encode(format!`%s/1/boards/%s/myPrefs/showListGuide`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -4882,7 +4906,7 @@ void putBoardsMyPrefsShowSidebar(string id, Variable[string] queryParams = (Vari
 	auto url = encode(format!`%s/1/boards/%s/myPrefs/showSidebar`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -4904,7 +4928,7 @@ void putBoardsMyPrefsShowSidebarActivity(string id, Variable[string] queryParams
 	auto url = encode(format!`%s/1/boards/%s/myPrefs/showSidebarActivity`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -4926,7 +4950,7 @@ void putBoardsMyPrefsShowSidebarBoardActions(string id, Variable[string] queryPa
 	auto url = encode(format!`%s/1/boards/%s/myPrefs/showSidebarBoardActions`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -4949,7 +4973,7 @@ void putBoardsMyPrefsShowSidebarMembers(string id, Variable[string] queryParams 
 	auto url = encode(format!`%s/1/boards/%s/myPrefs/showSidebarMembers`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -4974,7 +4998,7 @@ void putCardCustomFieldItem(string idCard, string idCustomField, Variable[string
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -4997,6 +5021,10 @@ string      pos                           The position of the card in its list. 
 datetime    due                           When the card is due, or 'null'
 boolean     dueComplete                   Whether the due date should be marked complete
 boolean     subscribed                    Whether the member is should be subscribed to the card
+string      address                       For use with/by the Map Power-Up
+string      locationName                  For use with/by the Map Power-Up
+string      coordinates                   For use with/by the Map Power-Up. Should be
+                                          latitude,longitude
 
 `)
 void putCards(string id, Variable[string] queryParams = (Variable[string]).init)
@@ -5009,7 +5037,7 @@ void putCards(string id, Variable[string] queryParams = (Variable[string]).init)
 	auto url = encode(format!`%s/1/cards/%s`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5032,7 +5060,7 @@ void putCardsActionsComments(string id, string idAction, Variable[string] queryP
 	auto url = encode(format!`%s/1/cards/%s/actions/%s/comments`(trelloAPIURL,id,idAction));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5058,7 +5086,7 @@ void putCardsCheckItem(string id, string idCheckItem, Variable[string] queryPara
 	auto url = encode(format!`%s/1/cards/%s/checkItem/%s`(trelloAPIURL,id,idCheckItem));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5082,7 +5110,7 @@ void putCardsChecklistCheckItem(string idCard, string idCheckItem, string idChec
 	auto url = encode(format!`%s/1/cards/%s/checklist/%s/checkItem/%s`(trelloAPIURL,idCard,idChecklist,idCheckItem));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5108,7 +5136,7 @@ void putCardsStickers(string id, string idSticker, Variable[string] queryParams 
 	auto url = encode(format!`%s/1/cards/%s/stickers/%s`(trelloAPIURL,id,idSticker));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5133,7 +5161,7 @@ void putChecklists(string id, Variable[string] queryParams = (Variable[string]).
 	auto url = encode(format!`%s/1/checklists/%s`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5156,7 +5184,7 @@ void putChecklistsName(string id, Variable[string] queryParams = (Variable[strin
 	auto url = encode(format!`%s/1/checklists/%s/name`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5182,7 +5210,7 @@ void putCustomfields(string id, string name = null, double pos = double.nan, boo
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5203,7 +5231,7 @@ void putEnterprisesAdmins(string id, string idMember)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5234,7 +5262,7 @@ void putEnterprisesMembersDeactivated(string id, string idMember, Variable[strin
 	auto url = encode(format!`%s/1/enterprises/%s/members/%s/deactivated`(trelloAPIURL,id,idMember));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5256,7 +5284,7 @@ void putEnterprisesOrganizations(string id, Variable[string] queryParams = (Vari
 	auto url = encode(format!`%s/1/enterprises/%s/organizations`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5280,7 +5308,7 @@ void putLabels(string id, Variable[string] queryParams = (Variable[string]).init
 	auto url = encode(format!`%s/1/labels/%s`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5303,7 +5331,7 @@ void putLabelsColor(string id, Variable[string] queryParams = (Variable[string])
 	auto url = encode(format!`%s/1/labels/%s/color`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5325,7 +5353,7 @@ void putLabelsName(string id, Variable[string] queryParams = (Variable[string]).
 	auto url = encode(format!`%s/1/labels/%s/name`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5352,7 +5380,7 @@ void putLists(string id, Variable[string] queryParams = (Variable[string]).init)
 	auto url = encode(format!`%s/1/lists/%s`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5374,7 +5402,7 @@ void putListsClosed(string id, Variable[string] queryParams = (Variable[string])
 	auto url = encode(format!`%s/1/lists/%s/closed`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5396,7 +5424,7 @@ void putListsIdBoard(string id, Variable[string] queryParams = (Variable[string]
 	auto url = encode(format!`%s/1/lists/%s/idBoard`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5418,7 +5446,7 @@ void putListsName(string id, Variable[string] queryParams = (Variable[string]).i
 	auto url = encode(format!`%s/1/lists/%s/name`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5440,7 +5468,7 @@ void putListsPos(string id, Variable[string] queryParams = (Variable[string]).in
 	auto url = encode(format!`%s/1/lists/%s/pos`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5463,7 +5491,7 @@ void putListsSoftLimit(string id, Variable[string] queryParams = (Variable[strin
 	auto url = encode(format!`%s/1/lists/%s/softLimit`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5485,7 +5513,7 @@ void putListsSubscribed(string id, Variable[string] queryParams = (Variable[stri
 	auto url = encode(format!`%s/1/lists/%s/subscribed`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5516,7 +5544,7 @@ void putMembers(string id, Variable[string] queryParams = (Variable[string]).ini
 	auto url = encode(format!`%s/1/members/%s`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5540,7 +5568,7 @@ void putMembersBoardBackgrounds(string id, string idBackground, Variable[string]
 	auto url = encode(format!`%s/1/members/%s/boardBackgrounds/%s`(trelloAPIURL,id,idBackground));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5564,7 +5592,7 @@ void putMembersBoardStars(string id, string idStar, Variable[string] queryParams
 	auto url = encode(format!`%s/1/members/%s/boardStars/%s`(trelloAPIURL,id,idStar));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5586,7 +5614,7 @@ void putNotifications(string id, Variable[string] queryParams = (Variable[string
 	auto url = encode(format!`%s/1/notifications/%s`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5608,7 +5636,7 @@ void putNotificationsUnread(string id, Variable[string] queryParams = (Variable[
 	auto url = encode(format!`%s/1/notifications/%s/unread`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5648,7 +5676,7 @@ void putOrganizations(string id, Variable[string] queryParams = (Variable[string
 	auto url = encode(format!`%s/1/organizations/%s`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5671,7 +5699,7 @@ void putOrganizationsMembers(string id, string idMember, Variable[string] queryP
 	auto url = encode(format!`%s/1/organizations/%s/members/%s`(trelloAPIURL,id,idMember));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5696,7 +5724,7 @@ void putOrganizationsMembers(string id, Variable[string] queryParams = (Variable
 	auto url = encode(format!`%s/1/organizations/%s/members`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5719,7 +5747,7 @@ void putOrganizationsMembersDeactivated(string id, string idMember, Variable[str
 	auto url = encode(format!`%s/1/organizations/%s/members/%s/deactivated`(trelloAPIURL,id,idMember));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5745,7 +5773,7 @@ void putTokensWebhooks(string token, string webhookId, Variable[string] queryPar
 	auto url = encode(format!`%s/1/tokens/%s/webhooks/%s`(trelloAPIURL,token,webhookId));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5772,7 +5800,7 @@ void putWebhooks(string id, Variable[string] queryParams = (Variable[string]).in
 	auto url = encode(format!`%s/1/webhooks/%s`(trelloAPIURL,id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	Request().put(url,queryParams.queryParamMap);
+	newRequest().put(url,queryParams.queryParamMap);
 }
 
 
@@ -5834,7 +5862,7 @@ auto search(Variable[string] queryParams = (Variable[string]).init)
 	auto url = encode(format!`%s/1/search`(trelloAPIURL));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -5858,7 +5886,7 @@ auto searchMembers(Variable[string] queryParams = (Variable[string]).init)
 	auto url = encode(format!`%s/1/search/members/`(trelloAPIURL));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -5883,7 +5911,7 @@ auto tokens(string token, Variable[string] queryParams = (Variable[string]).init
 	auto url = encode(format!`%s/1/tokens/%s`(trelloAPIURL,token));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -5907,7 +5935,7 @@ auto tokensMember(string token, Variable[string] queryParams = (Variable[string]
 	auto url = encode(format!`%s/1/tokens/%s/member`(trelloAPIURL,token));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -5928,7 +5956,7 @@ auto tokensWebhooks(string token)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -5950,7 +5978,7 @@ auto tokensWebhooks(string token, string idWebhook)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -5971,7 +5999,7 @@ auto webhooks(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -5994,7 +6022,7 @@ auto webhooks(string id, string field)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (Request().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
