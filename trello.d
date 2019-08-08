@@ -37,6 +37,13 @@ version (Windows)
 		return req;
 	}
 }
+else
+{
+	auto newRequest()
+	{
+		return Request();
+	}
+}
 
 void registerTrello(ref Handlers handlers)
 {
