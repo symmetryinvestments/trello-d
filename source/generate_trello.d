@@ -189,7 +189,7 @@ module kaleidic.sil.std.extra.trello;
 version (SIL_Plugin)
 {
 	import kaleidic.sil.lang.plugin : pluginImpl;
-		mixin pluginImpl!registerTrello;
+	mixin pluginImpl!registerTrello;
 }
 
 import kaleidic.sil.lang.handlers : Handlers;
@@ -218,6 +218,14 @@ version (Windows)
 		return req;
 	}
 }
+else
+{
+	auto newRequest()
+	{
+		return Request();
+	}
+}
+
 
 void registerTrello(ref Handlers handlers)
 {
