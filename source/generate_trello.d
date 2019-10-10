@@ -41,8 +41,8 @@ int main(string[] args)
 
 string getAPIInfo(string url)
 {
-	import arrogant:Arrogant;
-	import std.net.curl:get;
+	import arrogant : Arrogant;
+	import std.net.curl : get;
 	auto arrogant = Arrogant();
 	auto apidoc = get(url).idup;
 	auto tree = arrogant.parse(apidoc);
@@ -52,29 +52,30 @@ string getAPIInfo(string url)
 
 string generateRegisterHandlerHelper(ApiCall[] apis)
 {
-	import std.array:Appender,array;
-	import std.algorithm:map,sort,uniq;
-	import std.string:join,leftJustify,wrap,splitLines;
-	import std.format:format;
+	import std.array :Appender, array;
+	import std.algorithm : map, sort, uniq;
+	import std.string : join, leftJustify, wrap, splitLines;
+	import std.format : format;
 	Appender!string ret;
 
 	auto apiText = apis
-						.map!(api => (api.description ~ ",").leftJustify(28))
-						.array
-						.sort
-						.uniq
-						.join(" ")
-						.wrap(80)
-						.splitLines
-						.map!(line => "\t\t" ~ line)
-						.array
-						.join("\n");
+		.map!(api => (api.description ~ ", ").leftJustify(28))
+		.array
+		.sort
+		.uniq
+		.join(" ")
+		.wrap(80)
+		.splitLines
+		.map!(line => "\t\t" ~ line)
+		.array
+		.join("\n");
+
 	ret.put(format!
 q{
 private void registerHandlerHelper(ref Handlers handlers)
 {
-	import std.meta: AliasSeq;
-	static foreach(F;AliasSeq!(
+	import std.meta : AliasSeq;
+	static foreach(F; AliasSeq!(
 %s
 	))
 	{
@@ -88,9 +89,9 @@ private void registerHandlerHelper(ref Handlers handlers)
 
 string generateAPI(ApiCall[] apis)
 {
-	import std.algorithm:map,filter,sort,uniq;
-	import std.string:join,strip;
-	import std.array:Appender,array;
+	import std.algorithm : map, filter, sort, uniq;
+	import std.string : join, strip;
+	import std.array : Appender, array;
 	Appender!string ret;
 
 	apis = apis.filter!(api => api.url.strip.length > 0 && !api.isBlacklisted).array;
@@ -105,29 +106,25 @@ string generateAPI(ApiCall[] apis)
 
 bool isBlacklisted(ApiCall api)
 {
-	import std.algorithm:canFind;
-	import std.string:toLower;
-	foreach(entry;blacklist)
-	{
+	import std.algorithm  :canFind;
+	import std.string : toLower;
+	foreach (entry; blacklist)
 		if (api.description.toLower.canFind(entry.toLower))
 			return true;
-	}
 	return false;
 }
 
 ApiCall[] parseAPI(ref Asdf json)
 {
-	import std.range:put;
+	import std.range : put;
 	ApiCall[] ret;
 
-	foreach(el;json.byElement)
-	{
-		foreach(c;el["children"].byElement)
+	foreach(el; json.byElement)
+		foreach(c; el["children"].byElement)
 		{
 			auto apiCall = ApiCall(c);
 			ret ~= apiCall;
 		}
-	}
 	return ret;
 }
 
@@ -143,7 +140,7 @@ struct ResultCodeEntry
 
 	this(string s)
 	{
-		import std.string:strip;
+		import std.string : strip;
 		s = s.strip;
 		if(s.length==0)
 			return;
@@ -169,9 +166,9 @@ struct ResultCode
 enum CodeApiImports =
 q{
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 };
 
 enum CodePrelude =
@@ -184,13 +181,20 @@ module kaleidic.sil.std.extra.trello;
 	Example use from SIL:
 
 		trello.setSecrets()
-		a=trello.search({"query":"ALL","cards_limit":1000,"cards_page":1})
+		a = trello.search({"query" : "ALL", "cards_limit" : 1000, "cards_page" : 1})
 		a.cards
 +/
 
-import kaleidic.sil.lang.handlers:Handlers;
-import kaleidic.sil.lang.types: Variable, SILdoc;
-import requests: Request;
+
+version (SIL_Plugin)
+{
+	import kaleidic.sil.lang.plugin : pluginImpl;
+		mixin pluginImpl!registerTrello;
+}
+
+import kaleidic.sil.lang.handlers : Handlers;
+import kaleidic.sil.lang.types : Variable, SILdoc;
+import requests : Request;
 
 shared string trelloAPIURL = "https://api.trello.com";
 shared string trelloSecret, trelloAuth;
@@ -217,38 +221,38 @@ version (Windows)
 
 void registerTrello(ref Handlers handlers)
 {
-	import std.meta:AliasSeq;
+	import std.meta : AliasSeq;
 	handlers.openModule("trello");
 	scope(exit) handlers.closeModule();
-	static foreach(F;	AliasSeq!(	setSecrets,	createTokenURI,		openBrowserAuth,		setSecrets))
+	static foreach(F; AliasSeq!(setSecrets, createTokenURI, openBrowserAuth, setSecrets))
 		handlers.registerHandler!F;
 	handlers.registerHandlerHelper;
 }
 
 string createTokenURI(string apiKey="", string tokenScope = "read,write,account", string name = "Sil", string expiration = "never")
 {
-	import std.process: environment;
-	import std.format:format;
+	import std.process : environment;
+	import std.format : format;
 	if (apiKey.length == 0) apiKey = environment.get("TRELLO_API_KEY","");
 	return format!"https://trello.com/1/authorize?expiration=%s&name=%s&scope=%s&response_type=token&key=%s"
-			(expiration,name,tokenScope,apiKey);
+			(expiration, name, tokenScope, apiKey);
 }
 
 //void
 auto openBrowserAuth(string apiKey="", string tokenScope = "read,write,account", string name = "Sil", string expiration = "never")
 {
-	import std.process: environment;
+	import std.process : environment;
 	if (apiKey.length == 0) apiKey = environment.get("TRELLO_API_KEY","");
-	// import kaleidic.sil.std.core.process:openBrowser;
-	auto uri = createTokenURI(apiKey,tokenScope,name,expiration);
+	// import kaleidic.sil.std.core.process : openBrowser;
+	auto uri = createTokenURI(apiKey, tokenScope, name, expiration);
 	return uri; // openBrowser(uri);
 }
 
 @SILdoc("set Trello secrets from TRELLO_SECRET and TRELLO_AUTH environmental variables")
 string setSecrets()
 {
-	import std.process: environment;
-	import std.exception: enforce;
+	import std.process : environment;
+	import std.exception : enforce;
 	trelloSecret = environment.get("TRELLO_API_KEY","");
 	enforce(trelloSecret.length > 0, "TRELLO_API_KEY environmental variable must be set");
 	trelloAuth = environment.get("TRELLO_AUTH","");
@@ -258,17 +262,15 @@ string setSecrets()
 
 private void del(Request request, string uri, string[string] queryParams = (string[string]).init)
 {
-	import std.format:format;
-	import std.string:join;
-	import std.algorithm:canFind;
+	import std.format : format;
+	import std.string : join;
+	import std.algorithm : canFind;
 
 	string[] queryParamsArray;
 	if (queryParams !is null)
-	{
-		foreach(p;queryParams.byKeyValue)
-			queryParamsArray ~= format!"%s=%s"(p.key,p.value);
-	}
-	auto queryParamString = (queryParamsArray.length>0) ? format!"&%s&"(queryParamsArray.join("&")):"";
+		foreach(p; queryParams.byKeyValue)
+			queryParamsArray ~= format!"%s=%s"(p.key, p.value);
+	auto queryParamString = (queryParamsArray.length > 0) ? format!"&%s&"(queryParamsArray.join("&")):"";
 	uri ~= (!uri.canFind("?")) ? "?" : "&";
 	uri ~= queryParamString;
 	request.exec!"DELETE"(uri);
@@ -276,25 +278,25 @@ private void del(Request request, string uri, string[string] queryParams = (stri
 
 private void put(Request request, string uri,string[string] queryParams = (string[string]).init)
 {
-	import asdf:serializeToJson;
-	request.exec!"PUT"(uri,serializeToJson(queryParams));
+	import asdf : serializeToJson;
+	request.exec!"PUT"(uri, serializeToJson(queryParams));
 }
 /+
 // requests expect content to be provided
 private auto post(Request request, string uri)
 {
 	string[string] emptyQueryParams;
-	return request.execute("POST",uri,emptyQueryParams);
+	return request.execute("POST", uri, emptyQueryParams);
 }
 +/
 private string[string] queryParamMap(Variable[string] queryParams)
 {
-	import std.format:format;
-	import std.string:join;
-	import std.conv:to;
+	import std.format : format;
+	import std.string : join;
+	import std.conv : to;
 
 	string[string] ret;
-	foreach(entry;queryParams.byKeyValue)
+	foreach (entry; queryParams.byKeyValue)
 		ret[entry.key] = entry.value.to!string.stripQuotes;
 	return ret;
 }
@@ -302,29 +304,27 @@ private string stripQuotes(string s)
 {
 	if (s.length < 3)
 		return s;
-	if (s[0] == '"' && s[$-1] == '"')
-		return s[1..$-1];
+	if (s[0] == '"' && s[$ - 1] == '"')
+		return s[1 .. $ - 1];
 	return s;
 }
 
 private string queryParamString(Variable[string] queryParams)
 {
-	import std.format:format;
-	import std.string:join;
+	import std.format : format;
+	import std.string : join;
 
 	string[] queryParamsArray;
 	if (queryParams !is null)
-	{
-		foreach(p;queryParams.byKeyValue)
-			queryParamsArray ~= format!"%s=%s"(p.key,p.value);
-	}
-	return (queryParamsArray.length>0) ? format!"&%s&"(queryParamsArray.join("&")):"";
+		foreach (p;queryParams.byKeyValue)
+			queryParamsArray ~= format!"%s=%s"(p.key, p.value);
+	return (queryParamsArray.length > 0) ? format!"&%s&"(queryParamsArray.join("&")):"";
 }
 
 private bool isJson(string result)
 {
-	import std.string:strip,startsWith;
-	import std.algorithm:min;
+	import std.string : strip, startsWith;
+	import std.algorithm : min;
 	result = result[0 .. min(100,result.length)].strip;
 	return result.startsWith("{") || result.startsWith("[");
 }
@@ -349,15 +349,15 @@ private Variable asVariable(string result)
 auto listMemberSavedSearches(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/savedSearches`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/members/%s/savedSearches`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url, queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -369,15 +369,15 @@ auto listMemberSavedSearches(string id)
 auto savedSearch(string id, string idSearch)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/savedSearches/%s`(trelloAPIURL,id,idSearch));
+	auto url = encode(format!`%s/1/members/%s/savedSearches/%s`(trelloAPIURL, id, idSearch));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url, queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -394,14 +394,14 @@ auto savedSearch(string id, string idSearch)
 auto specificCustomBoardBackground(string id, string idBackground, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/customBoardBackgrounds/%s`(trelloAPIURL,id,idBackground));
+	auto url = encode(format!`%s/1/members/%s/customBoardBackgrounds/%s`(trelloAPIURL, id, idBackground));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url, queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -418,14 +418,14 @@ auto specificCustomBoardBackground(string id, string idBackground, Variable[stri
 void putMembersCustomBoardBackgrounds(string id, string idBackground, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s//customBoardBackgrounds/%s`(trelloAPIURL,id,idBackground));
+	auto url = encode(format!`%s/1/members/%s//customBoardBackgrounds/%s`(trelloAPIURL, id, idBackground));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -435,9 +435,9 @@ void putMembersCustomBoardBackgrounds(string id, string idBackground, Variable[s
 
 string toD(ApiCall call)
 {
-	import std.array:Appender;
-	import std.algorithm:filter;
-	import std.format:format;
+	import std.array : Appender;
+	import std.algorithm : filter;
+	import std.format : format;
 
 	Appender!string ret;
 	ret.put(call.getSilDoc());
@@ -446,7 +446,7 @@ string toD(ApiCall call)
 	ret.put(CodeApiImports);
 	ret.put("\n");
 	ret.put("	auto url = encode(" ~ generateUrlD(call) ~ ");");
-	//format!"%s/1/search/?query=%s%s&key=%s&token=%s"(trelloAPIURL,query,queryParamString,trelloSecret,trelloAuth));`);
+	//format!"%s/1/search/?query=%s%s&key=%s&token=%s"(trelloAPIURL, query, queryParamString, trelloSecret, trelloAuth));`);
 	ret.put("\n");
 	ret.put(call.generateRestCall);
 	if (call.hasReturn)
@@ -458,20 +458,20 @@ string toD(ApiCall call)
 
 string replaceSwaggerToken(string url)
 {
-	import std.string:indexOf;
+	import std.string : indexOf;
 	auto i = url.indexOf("{");
-	if (i==-1)
+	if (i == -1)
 		return url;
-	auto j = url[i+1..$].indexOf("}");
-	if (j==-1)
+	auto j = url[i + 1 .. $].indexOf("}");
+	if (j == -1)
 		return url;
-	return replaceSwaggerToken(url[0..i] ~ "%s" ~ url[i+1+j+1..$]);
+	return replaceSwaggerToken(url[0 .. i] ~ "%s" ~ url[i + 1 + j + 1 .. $]);
 }
 
 string generateRestCall(ApiCall call)
 {
-	import std.array:Appender;
-	import std.format:format;
+	import std.array : Appender;
+	import std.format : format;
 	Appender!string ret;
 	if (!call.hasQueryParams)
 	{
@@ -480,8 +480,8 @@ string generateRestCall(ApiCall call)
 	ret.put(q{	queryParams["key"] = Variable(trelloSecret);} ~ "\n");
 	ret.put(q{	queryParams["token"] = Variable(trelloAuth);} ~ "\n");
 	ret.put(!call.hasReturn ?
-			format!"	newRequest().%s(url,%s);\n"(call.method,"queryParams.queryParamMap") :
-			format!"	auto result = cast(string) (newRequest().%s(url,%s).responseBody.array);\n"(call.method,"queryParams.queryParamMap")
+			format!"	newRequest().%s(url, %s);\n"(call.method, "queryParams.queryParamMap") :
+			format!"	auto result = cast(string) (newRequest().%s(url,%s).responseBody.array);\n"(call.method, "queryParams.queryParamMap")
 	);
 	return ret.data;
 }
@@ -493,67 +493,75 @@ bool hasReturn(ApiCall call)
 
 string generateUrlD(ApiCall call)
 {
-	import std.string:split,join;
-	import std.format:format;
-	import std.algorithm:filter,map;
-	import std.array:Appender,array;
+	import std.string : split, join;
+	import std.format : format;
+	import std.algorithm : filter, map;
+	import std.array : Appender, array;
 	Appender!string ret;
-	auto names = call.url.split("/").filter!(tok => tok.length>3 && tok[0]=='{').map!(tok=>tok[1..$-1]).array;
+	auto names = call.url
+		.split("/")
+		.filter!(tok => tok.length > 3 && tok[0] == '{')
+		.map!(tok => tok[1 .. $ - 1])
+		.array;
 	names = "trelloAPIURL" ~ names;
 	auto url = call.url.replaceSwaggerToken;
 	ret.put("format!`");
 	ret.put(`%s/1`);
 	ret.put(url);
-	/+
-		if (call.hasQueryParams && call.method == "get")
-		{
-			ret.put("%s");
-			names= names ~ "queryParams.queryParamString";
-		}
-	+/
+/+
+	if (call.hasQueryParams && call.method == "get")
+	{
+		ret.put("%s");
+		names= names ~ "queryParams.queryParamString";
+	}
++/
 	ret.put("`(");
-	ret.put(names.join(","));
+	ret.put(names.join(", "));
 	ret.put(")");
 	return ret.data;
 }
 
 string prettyParams(Param[] params)
 {
-	import std.string:leftJustify,wrap,join;
-	import std.format:format;
-	import std.array:Appender,array;
-	import std.string:splitLines,strip,replace;
-	import std.algorithm:filter;
-	import std.range:repeat;
-	import std.conv:to;
+	import std.string : leftJustify, wrap, join;
+	import std.format : format;
+	import std.array : Appender, array;
+	import std.string : splitLines, strip, replace;
+	import std.algorithm : filter;
+	import std.range : repeat;
+	import std.conv : to;
 
 	Appender!string ret;
 
-	foreach(param;params)
+	foreach (param; params)
 	{
-		auto desc = param.desc.replaceBackTick.splitLines.join(' ').wrap(60).leftJustify(60).splitLines.filter!(line=>line.strip.length>0).array;
+		auto desc = param.desc
+			.replaceBackTick
+			.splitLines
+			.join(' ')
+			.wrap(60)
+			.leftJustify(60)
+			.splitLines
+			.filter!(line => line.strip.length > 0)
+			.array;
 		auto firstDesc = (desc.length == 0) ? "" : desc[0];
 		ret.put(format!"%s%s%s\n"(
-												param.type.to!string.stripTrailingUnderline.leftJustify(12),
-												param.name.replace("/","_").leftJustify(30),
-												firstDesc));
-		if(desc.length>1)
-		{
-			foreach(descLine;desc[1..$])
-			{
-				ret.put(format!"%s%s\n"(' '.repeat(42),descLine));
-			}
-		}
+				param.type.to!string.stripTrailingUnderline.leftJustify(12),
+				param.name.replace("/", "_").leftJustify(30),
+				firstDesc));
+		if (desc.length > 1)
+			foreach (descLine; desc[1..$])
+				ret.put(format!"%s%s\n"(' '.repeat(42), descLine));
 	}
 	return ret.data;
 }
 
 string getSilDocParamsHelper(string title, Param[] params)
 {
-	import std.array:Appender;
+	import std.array : Appender;
 	Appender!string ret;
 
-	if(params.length>0)
+	if(params.length > 0)
 	{
 		ret.put("\n");
 		ret.put(title);
@@ -565,17 +573,16 @@ string getSilDocParamsHelper(string title, Param[] params)
 
 bool hasQueryParams(ApiCall call)
 {
-	import std.array:Appender,array;
-	import std.algorithm:filter;
-	return (call.params.filter!(param => param.in_ == "query").array.length > 0);
+	import std.algorithm : any;
+	return call.params.any!(param => param.in_ == "query");
 }
 
 string getSilDoc(ApiCall call)
 {
-	import std.array:Appender,array;
-	import std.algorithm:filter;
-	import std.format:format;
-	import std.string:strip;
+	import std.array : Appender, array;
+	import std.algorithm : filter;
+	import std.format : format;
+	import std.string : strip;
 
 	Appender!string ret;
 	Appender!string finalRet;
@@ -585,9 +592,9 @@ string getSilDoc(ApiCall call)
 	auto optionalParams = call.params.filter!(param => (!param.required && !(param.in_ == "query"))).array;
 	auto queryParams = call.params.filter!(param => param.in_ == "query").array;
 
-	ret.put(getSilDocParamsHelper("Required Params",requiredParams));
-	ret.put(getSilDocParamsHelper("Optional Params",optionalParams));
-	ret.put(getSilDocParamsHelper("Query Params",queryParams));
+	ret.put(getSilDocParamsHelper("Required Params", requiredParams));
+	ret.put(getSilDocParamsHelper("Optional Params", optionalParams));
+	ret.put(getSilDocParamsHelper("Query Params", queryParams));
 
 	if (ret.data.strip.length > 0)
 	{
@@ -600,20 +607,21 @@ string getSilDoc(ApiCall call)
 
 string stripTrailingUnderline(string s)
 {
-	return (s.length<1 || s[$-1]!='_') ? s: s[0..$-1];
+	return (s.length < 1 || s[$ - 1] != '_') ? s : s[0 .. $ - 1];
 }
 
 string replaceBackTick(string s)
 {
-	import std.string:replace;
-	return s.replace("`","'");
+	import std.string : replace;
+	return s.replace("`", "'");
 }
 
 string getPrototype(ApiCall call)
 {
-	import std.array:Appender,array;
-	import std.algorithm:filter,map;
-	import std.string:join;
+	import std.array : Appender, array;
+	import std.algorithm : filter, map;
+	import std.string : join;
+	import std.range : chain;
 
 	Appender!string ret;
 
@@ -623,8 +631,7 @@ string getPrototype(ApiCall call)
 	auto requiredParams = call.params.filter!(param => (param.required && !(param.in_ == "query"))).array;
 	auto optionalParams = call.params.filter!(param => (!param.required && !(param.in_ == "query"))).array;
 	auto queryParams = call.params.filter!(param => param.in_ == "query").array;
-	auto params = requiredParams.map!(param=>param.toD).array ~
-				 optionalParams.map!(param=>param.toD).array;
+	auto params = requiredParams.chain(optionalParams).map!(param => param.toD).array;
 	if(queryParams.length > 0)
 		params ~= ["Variable[string] queryParams = (Variable[string]).init"];
 	ret.put(params.join(", "));
@@ -649,31 +656,31 @@ struct ApiCall
 
 	this(ref Asdf c)
 	{
-		import std.algorithm:canFind,countUntil,filter,map;
-		import std.string:split,replace;
-		import std.array:array;
-		import std.exception:enforce;
+		import std.algorithm : canFind, countUntil, filter, map;
+		import std.string : split, replace;
+		import std.array : array;
+		import std.exception : enforce;
 
 		slug = c["slug"].get!string("");
-		excerpt=c["excerpt"].get!string("");
-		type=c["type"].get!string("");
-		swaggerPath=c["swagger"]["path"].get!string("");
+		excerpt = c["excerpt"].get!string("");
+		type = c["type"].get!string("");
+		swaggerPath = c["swagger"]["path"].get!string("");
 		auto el = c["api"];
 		this.url = el["url"].get!string("");
-		this.method=el["method"].get!string("").replace("delete","del");
+		this.method = el["method"].get!string("").replace("delete","del");
 		this.returnType = "";
-		this.params = el["params"].byElement.map!(p=>Param(p)).array;
+		this.params = el["params"].byElement.map!(p => Param(p)).array;
 
 		urlArgs = url.split("/")
-						.filter!(part => part.length > 3 && part[0]=='{')
-						.map!(part => part[1..$-1])
-						.array;
-		foreach(arg;urlArgs)
+			.filter!(part => part.length > 3 && part[0] == '{')
+			.map!(part => part[1 .. $-1])
+			.array;
+		foreach (arg; urlArgs)
 		{
-			auto i =this.params.countUntil!(param => param.name==arg);
-			if (i!=-1)
+			auto i = this.params.countUntil!(param => param.name == arg);
+			if (i != -1)
 			{
-				this.params[i].required=true;
+				this.params[i].required = true;
 				this.params[i].in_ = "path"; // FIXME
 				// enforce(this.params[i].in_ != "query");
 			}
@@ -682,23 +689,23 @@ struct ApiCall
 		this.codes = el["results"]["codes"].byElement.map!(c => ResultCode(c)).array;
 		/+
 		auto examples = el["examples"];
-		foreach(example;examples.byKeyValue)
+		foreach (example; examples.byKeyValue)
 		{
-			if(example.key=="codes")
-				this.codeExamples~=example.value.byElement.map!(e => e.get!string("")).array;
+			if (example.key == "codes")
+				this.codeExamples ~= example.value.byElement.map!(e => e.get!string("")).array;
 		}
 		+/
 	}
 	string description()
 	{
-		import std.array:Appender;
-		import std.string:toLower,capitalize,split,replace;
+		import std.array : Appender;
+		import std.string : toLower, capitalize, split, replace;
 		Appender!string ret;
 
-		ret.put(method.toLower); // .replace("put","set").replace("post","set"));
+		ret.put(method.toLower); // .replace("put", "set").replace("post", "set"));
 
 		// special casing conflicts
-		switch(swaggerPath)
+		switch (swaggerPath)
 		{
 			/+
 			case "/members/{id}/savedSearches":
@@ -747,15 +754,13 @@ struct ApiCall
 +/
 			default:
 				auto tokens = swaggerPath.stripSwaggerParams.split("/"); // replace("s/{","/{").stripSwaggerParams.split("/");
-				if (tokens.length==0)
+				if (tokens.length == 0)
 				{
-					ret.put(slug.replace("-","_"));
+					ret.put(slug.replace("-", "_"));
 					return ret.data.removeGet();
 				}
-				foreach(token;tokens)
-				{
+				foreach(token; tokens)
 					ret.put(token.capitalizeFirst);
-				}
 				break;
 		}
 		return ret.data.removeGet();
@@ -764,41 +769,41 @@ struct ApiCall
 
 string removeGet(string s)
 {
-	import std.string:startsWith;
-	return (s.startsWith("get")) ?  s[3..$].decapitalize : s;
+	import std.string : startsWith;
+	return s.startsWith("get") ? s[3 .. $].decapitalize : s;
 }
 
 string decapitalize(string s)
 {
-	import std.string:toLower;
-	if (s.length <2)
+	import std.string : toLower;
+	if (s.length < 2)
 		return s;
-	return [s[0]].toLower ~ s[1..$];
+	return [s[0]].toLower ~ s[1 .. $];
 }
 
 string capitalizeFirst(string s)
 {
 	import std.string:toUpper;
-	if (s.length <2)
+	if (s.length < 2)
 		return s;
-	return [s[0]].toUpper~ s[1..$];
+	return [s[0]].toUpper ~ s[1 .. $];
 }
 
 string stripSwaggerParams(string s)
 {
 	string ret;
 	bool inParam = false;
-	foreach(c;s)
+	foreach (c; s)
 	{
-		if(c=='{')
+		if(c == '{')
 		{
-			inParam=true;
-			ret~="/";
+			inParam = true;
+			ret ~= "/";
 		}
 		if (!inParam)
-			ret~=c;
-		if (c=='}')
-			inParam=false;
+			ret ~= c;
+		if (c == '}')
+			inParam = false;
 	}
 	return ret;
 }
@@ -826,9 +831,10 @@ struct Param
 		this.defaultValue = el["defaultValue"].get!string("");
 		this.name = el["name"].get!string("");
 	}
+
 	string defaultValueD()
 	{
-		import std.format:format;
+		import std.format : format;
 
 		final switch(type) with(ParamType)
 		{
@@ -854,13 +860,13 @@ struct Param
 
 string toD(Param param)
 {
-	import std.string:replace;
-	import std.array:Appender;
+	import std.string : replace;
+	import std.array : Appender;
 	Appender!string ret;
 
 	ret.put(param.type.toD);
 	ret.put(" ");
-	ret.put(param.name.replace("/","_"));
+	ret.put(param.name.replace("/", "_"));
 	if(!param.required)
 		ret.put(" = " ~ param.defaultValueD);
 	return ret.data;
@@ -869,13 +875,11 @@ string toD(Param param)
 
 ParamType parseParamType(string s)
 {
-	import std.conv:to;
-	import std.traits:EnumMembers;
+	import std.conv : to;
+	import std.traits : EnumMembers;
 	static foreach(T; EnumMembers!ParamType)
-	{
 		if (T.to!string.stripTrailingUnderline == s)
 			return T;
-	}
 	return ParamType.object_;
 }
 
@@ -893,7 +897,7 @@ enum ParamType
 
 string toD(ParamType type)
 {
-	final switch(type) with (ParamType)
+	final switch (type) with (ParamType)
 	{
 		case boolean:
 			return "bool";

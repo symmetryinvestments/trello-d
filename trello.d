@@ -7,13 +7,20 @@ module kaleidic.sil.std.extra.trello;
 	Example use from SIL:
 
 		trello.setSecrets()
-		a=trello.search({"query":"ALL","cards_limit":1000,"cards_page":1})
+		a = trello.search({"query" : "ALL", "cards_limit" : 1000, "cards_page" : 1})
 		a.cards
 +/
 
-import kaleidic.sil.lang.handlers:Handlers;
-import kaleidic.sil.lang.types: Variable, SILdoc;
-import requests: Request;
+
+version (SIL_Plugin)
+{
+	import kaleidic.sil.lang.plugin : pluginImpl;
+		mixin pluginImpl!registerTrello;
+}
+
+import kaleidic.sil.lang.handlers : Handlers;
+import kaleidic.sil.lang.types : Variable, SILdoc;
+import requests : Request;
 
 shared string trelloAPIURL = "https://api.trello.com";
 shared string trelloSecret, trelloAuth;
@@ -40,38 +47,38 @@ version (Windows)
 
 void registerTrello(ref Handlers handlers)
 {
-	import std.meta:AliasSeq;
+	import std.meta : AliasSeq;
 	handlers.openModule("trello");
 	scope(exit) handlers.closeModule();
-	static foreach(F;	AliasSeq!(	setSecrets,	createTokenURI,		openBrowserAuth,		setSecrets))
+	static foreach(F; AliasSeq!(setSecrets, createTokenURI, openBrowserAuth, setSecrets))
 		handlers.registerHandler!F;
 	handlers.registerHandlerHelper;
 }
 
 string createTokenURI(string apiKey="", string tokenScope = "read,write,account", string name = "Sil", string expiration = "never")
 {
-	import std.process: environment;
-	import std.format:format;
+	import std.process : environment;
+	import std.format : format;
 	if (apiKey.length == 0) apiKey = environment.get("TRELLO_API_KEY","");
 	return format!"https://trello.com/1/authorize?expiration=%s&name=%s&scope=%s&response_type=token&key=%s"
-			(expiration,name,tokenScope,apiKey);
+			(expiration, name, tokenScope, apiKey);
 }
 
 //void
 auto openBrowserAuth(string apiKey="", string tokenScope = "read,write,account", string name = "Sil", string expiration = "never")
 {
-	import std.process: environment;
+	import std.process : environment;
 	if (apiKey.length == 0) apiKey = environment.get("TRELLO_API_KEY","");
-	// import kaleidic.sil.std.core.process:openBrowser;
-	auto uri = createTokenURI(apiKey,tokenScope,name,expiration);
+	// import kaleidic.sil.std.core.process : openBrowser;
+	auto uri = createTokenURI(apiKey, tokenScope, name, expiration);
 	return uri; // openBrowser(uri);
 }
 
 @SILdoc("set Trello secrets from TRELLO_SECRET and TRELLO_AUTH environmental variables")
 string setSecrets()
 {
-	import std.process: environment;
-	import std.exception: enforce;
+	import std.process : environment;
+	import std.exception : enforce;
 	trelloSecret = environment.get("TRELLO_API_KEY","");
 	enforce(trelloSecret.length > 0, "TRELLO_API_KEY environmental variable must be set");
 	trelloAuth = environment.get("TRELLO_AUTH","");
@@ -81,17 +88,15 @@ string setSecrets()
 
 private void del(Request request, string uri, string[string] queryParams = (string[string]).init)
 {
-	import std.format:format;
-	import std.string:join;
-	import std.algorithm:canFind;
+	import std.format : format;
+	import std.string : join;
+	import std.algorithm : canFind;
 
 	string[] queryParamsArray;
 	if (queryParams !is null)
-	{
-		foreach(p;queryParams.byKeyValue)
-			queryParamsArray ~= format!"%s=%s"(p.key,p.value);
-	}
-	auto queryParamString = (queryParamsArray.length>0) ? format!"&%s&"(queryParamsArray.join("&")):"";
+		foreach(p; queryParams.byKeyValue)
+			queryParamsArray ~= format!"%s=%s"(p.key, p.value);
+	auto queryParamString = (queryParamsArray.length > 0) ? format!"&%s&"(queryParamsArray.join("&")):"";
 	uri ~= (!uri.canFind("?")) ? "?" : "&";
 	uri ~= queryParamString;
 	request.exec!"DELETE"(uri);
@@ -99,25 +104,25 @@ private void del(Request request, string uri, string[string] queryParams = (stri
 
 private void put(Request request, string uri,string[string] queryParams = (string[string]).init)
 {
-	import asdf:serializeToJson;
-	request.exec!"PUT"(uri,serializeToJson(queryParams));
+	import asdf : serializeToJson;
+	request.exec!"PUT"(uri, serializeToJson(queryParams));
 }
 /+
 // requests expect content to be provided
 private auto post(Request request, string uri)
 {
 	string[string] emptyQueryParams;
-	return request.execute("POST",uri,emptyQueryParams);
+	return request.execute("POST", uri, emptyQueryParams);
 }
 +/
 private string[string] queryParamMap(Variable[string] queryParams)
 {
-	import std.format:format;
-	import std.string:join;
-	import std.conv:to;
+	import std.format : format;
+	import std.string : join;
+	import std.conv : to;
 
 	string[string] ret;
-	foreach(entry;queryParams.byKeyValue)
+	foreach (entry; queryParams.byKeyValue)
 		ret[entry.key] = entry.value.to!string.stripQuotes;
 	return ret;
 }
@@ -125,29 +130,27 @@ private string stripQuotes(string s)
 {
 	if (s.length < 3)
 		return s;
-	if (s[0] == '"' && s[$-1] == '"')
-		return s[1..$-1];
+	if (s[0] == '"' && s[$ - 1] == '"')
+		return s[1 .. $ - 1];
 	return s;
 }
 
 private string queryParamString(Variable[string] queryParams)
 {
-	import std.format:format;
-	import std.string:join;
+	import std.format : format;
+	import std.string : join;
 
 	string[] queryParamsArray;
 	if (queryParams !is null)
-	{
-		foreach(p;queryParams.byKeyValue)
-			queryParamsArray ~= format!"%s=%s"(p.key,p.value);
-	}
-	return (queryParamsArray.length>0) ? format!"&%s&"(queryParamsArray.join("&")):"";
+		foreach (p;queryParams.byKeyValue)
+			queryParamsArray ~= format!"%s=%s"(p.key, p.value);
+	return (queryParamsArray.length > 0) ? format!"&%s&"(queryParamsArray.join("&")):"";
 }
 
 private bool isJson(string result)
 {
-	import std.string:strip,startsWith;
-	import std.algorithm:min;
+	import std.string : strip, startsWith;
+	import std.algorithm : min;
 	result = result[0 .. min(100,result.length)].strip;
 	return result.startsWith("{") || result.startsWith("[");
 }
@@ -172,15 +175,15 @@ private Variable asVariable(string result)
 auto listMemberSavedSearches(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/savedSearches`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/members/%s/savedSearches`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url, queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -192,15 +195,15 @@ auto listMemberSavedSearches(string id)
 auto savedSearch(string id, string idSearch)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/savedSearches/%s`(trelloAPIURL,id,idSearch));
+	auto url = encode(format!`%s/1/members/%s/savedSearches/%s`(trelloAPIURL, id, idSearch));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url, queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -217,14 +220,14 @@ auto savedSearch(string id, string idSearch)
 auto specificCustomBoardBackground(string id, string idBackground, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/customBoardBackgrounds/%s`(trelloAPIURL,id,idBackground));
+	auto url = encode(format!`%s/1/members/%s/customBoardBackgrounds/%s`(trelloAPIURL, id, idBackground));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
+	auto result = cast(string) (newRequest().get(url, queryParams.queryParamMap).responseBody.array);
 	return result.asVariable;
 }
 
@@ -241,14 +244,14 @@ auto specificCustomBoardBackground(string id, string idBackground, Variable[stri
 void putMembersCustomBoardBackgrounds(string id, string idBackground, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s//customBoardBackgrounds/%s`(trelloAPIURL,id,idBackground));
+	auto url = encode(format!`%s/1/members/%s//customBoardBackgrounds/%s`(trelloAPIURL, id, idBackground));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -257,8 +260,8 @@ void putMembersCustomBoardBackgrounds(string id, string idBackground, Variable[s
 
 private void registerHandlerHelper(ref Handlers handlers)
 {
-	import std.meta: AliasSeq;
-	static foreach(F;AliasSeq!(
+	import std.meta : AliasSeq;
+	static foreach(F; AliasSeq!(
 		actions, actionsBoard, actionsCard, actionsDisplay, actionsList, actionsMember,
 		actionsMemberCreator, actionsOrganization, actionsReactions,
 		actionsReactionsSummary, batch, boards, boardsActions, boardsBoardPlugins,
@@ -344,11 +347,11 @@ string      memberCreator_fields          'all' or a comma-separated list of mem
 auto actions(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/actions/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/actions/%s`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -365,11 +368,11 @@ string      field                         An action [field](ref:action-object)
 auto actions(string id, string field)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/actions/%s/%s`(trelloAPIURL,id,field));
+	auto url = encode(format!`%s/1/actions/%s/%s`(trelloAPIURL, id, field));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -390,11 +393,11 @@ string      fields                        'all' or a comma-separated list of boa
 auto actionsBoard(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/actions/%s/board`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/actions/%s/board`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -414,11 +417,11 @@ string      fields                        'all' or a comma-separated list of car
 auto actionsCard(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/actions/%s/card`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/actions/%s/card`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -434,11 +437,11 @@ string      id                            The ID of the action
 auto actionsDisplay(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/actions/%s/display`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/actions/%s/display`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -459,11 +462,11 @@ string      fields                        'all' or a comma-separated list of lis
 auto actionsList(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/actions/%s/list`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/actions/%s/list`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -483,11 +486,11 @@ string      fields                        'all' or a comma-separated list of mem
 auto actionsMember(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/actions/%s/member`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/actions/%s/member`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -507,11 +510,11 @@ string      fields                        'all' or a comma-separated list of mem
 auto actionsMemberCreator(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/actions/%s/memberCreator`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/actions/%s/memberCreator`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -531,11 +534,11 @@ string      fields                        'all' or a comma-separated list of org
 auto actionsOrganization(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/actions/%s/organization`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/actions/%s/organization`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -556,11 +559,11 @@ boolean     emoji                         Whether to load the emoji as a nested 
 auto actionsReactions(string idAction, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/actions/%s/reactions`(trelloAPIURL,idAction));
+	auto url = encode(format!`%s/1/actions/%s/reactions`(trelloAPIURL, idAction));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -582,11 +585,11 @@ boolean     emoji                         Whether to load the emoji as a nested 
 auto actionsReactions(string idAction, string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/actions/%s/reactions/%s`(trelloAPIURL,idAction,id));
+	auto url = encode(format!`%s/1/actions/%s/reactions/%s`(trelloAPIURL, idAction, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -602,11 +605,11 @@ string      idAction                      The ID of the action
 auto actionsReactionsSummary(string idAction)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/actions/%s/reactionsSummary`(trelloAPIURL,idAction));
+	auto url = encode(format!`%s/1/actions/%s/reactionsSummary`(trelloAPIURL, idAction));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -626,9 +629,9 @@ string      urls                          A list of API routes. Maximum of 10 ro
 auto batch(Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
 	auto url = encode(format!`%s/1/batch`(trelloAPIURL));
 	queryParams["key"] = Variable(trelloSecret);
@@ -698,11 +701,11 @@ boolean     tags                          Also known as collections, tags, refer
 auto boards(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/boards/%s`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -723,11 +726,11 @@ string      field                         The field you'd like to receive. Valid
 auto boards(string id, string field)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/%s`(trelloAPIURL,id,field));
+	auto url = encode(format!`%s/1/boards/%s/%s`(trelloAPIURL, id, field));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -744,11 +747,11 @@ string      boardId
 auto boardsActions(string boardId)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/actions`(trelloAPIURL,boardId));
+	auto url = encode(format!`%s/1/boards/%s/actions`(trelloAPIURL, boardId));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -765,11 +768,11 @@ string      id                            The ID of the board
 auto boardsBoardPlugins(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/boardPlugins`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/boards/%s/boardPlugins`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -789,11 +792,11 @@ string      filter                        Valid values: mine, none
 auto boardsBoardStars(string boardId, string filter = null)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/boardStars`(trelloAPIURL,boardId));
+	auto url = encode(format!`%s/1/boards/%s/boardStars`(trelloAPIURL, boardId));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -810,11 +813,11 @@ string      id                            The ID of the board
 auto boardsChecklists(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/checklists`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/boards/%s/checklists`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -836,11 +839,11 @@ int         limit                         0 to 1000
 auto boardsLabels(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/labels`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/boards/%s/labels`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -857,11 +860,11 @@ string      filter                        One of 'all', 'closed', 'none', 'open'
 auto boardsLists(string id, string filter)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/lists/%s`(trelloAPIURL,id,filter));
+	auto url = encode(format!`%s/1/boards/%s/lists/%s`(trelloAPIURL, id, filter));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -886,11 +889,11 @@ string      fields                        'all' or a comma-separated list of lis
 auto boardsLists(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/lists`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/boards/%s/lists`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -906,11 +909,11 @@ string      id                            The ID of the board
 auto boardsMembers(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/members`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/boards/%s/members`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -938,11 +941,11 @@ string      member_fields                 Fields to show if 'member=true'. Valid
 auto boardsMemberships(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/memberships`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/boards/%s/memberships`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -961,11 +964,11 @@ string      filter                        One of: 'enabled' or 'available'
 auto boardsPlugins(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/plugins`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/boards/%s/plugins`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -1018,11 +1021,11 @@ boolean     customFieldItems              Whether to include the customFieldItem
 auto cards(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/cards/%s`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -1039,11 +1042,11 @@ string      field                         The desired field. One of [fields](ref
 auto cards(string id, string field)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/%s`(trelloAPIURL,id,field));
+	auto url = encode(format!`%s/1/cards/%s/%s`(trelloAPIURL, id, field));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -1060,11 +1063,11 @@ string      id                            The ID of the card
 auto cardsActions(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/actions`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/cards/%s/actions`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -1086,11 +1089,11 @@ string      fields                        'all' or a comma-separated list of att
 auto cardsAttachments(string id, string idAttachment, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/attachments/%s`(trelloAPIURL,id,idAttachment));
+	auto url = encode(format!`%s/1/cards/%s/attachments/%s`(trelloAPIURL, id, idAttachment));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -1111,11 +1114,11 @@ string      filter                        Use 'cover' to restrict to just the co
 auto cardsAttachments(string id, string fields = null, string filter = null)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/attachments`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/cards/%s/attachments`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -1136,11 +1139,11 @@ string      fields                        'all' or a comma-separated list of boa
 auto cardsBoard(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/board`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/cards/%s/board`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -1161,11 +1164,11 @@ string      fields                        'all' or a comma-separated list of
 auto cardsCheckItem(string id, string idCheckItem, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/checkItem/%s`(trelloAPIURL,id,idCheckItem));
+	auto url = encode(format!`%s/1/cards/%s/checkItem/%s`(trelloAPIURL, id, idCheckItem));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -1184,11 +1187,11 @@ string      fields                        'all' or a comma-separated list of: 'i
 auto cardsCheckItemStates(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/checkItemStates`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/cards/%s/checkItemStates`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -1212,11 +1215,11 @@ string      fields                        'all' or a comma-separated list of:
 auto cardsChecklists(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/checklists`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/cards/%s/checklists`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -1232,11 +1235,11 @@ string      id                            The ID of the card
 auto cardsCustomFieldItems(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/customFieldItems`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/cards/%s/customFieldItems`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -1257,11 +1260,11 @@ string      fields                        'all' or a comma-separated list of lis
 auto cardsList(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/list`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/cards/%s/list`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -1281,11 +1284,11 @@ string      fields                        'all' or a comma-separated list of mem
 auto cardsMembers(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/members`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/cards/%s/members`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -1305,11 +1308,11 @@ string      fields                        'all' or a comma-separated list of mem
 auto cardsMembersVoted(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/membersVoted`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/cards/%s/membersVoted`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -1325,11 +1328,11 @@ string      id                            The ID of the card
 auto cardsPluginData(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/pluginData`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/cards/%s/pluginData`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -1351,11 +1354,11 @@ string      fields                        'all' or a comma-separated list of sti
 auto cardsStickers(string id, string idSticker, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/stickers/%s`(trelloAPIURL,id,idSticker));
+	auto url = encode(format!`%s/1/cards/%s/stickers/%s`(trelloAPIURL, id, idSticker));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -1375,11 +1378,11 @@ string      fields                        'all' or a comma-separated list of sti
 auto cardsStickers(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/stickers`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/cards/%s/stickers`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -1396,11 +1399,11 @@ string      field                         A checklist [field](ref:checklist-obje
 auto checklists(string id, string field)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/checklists/%s/%s`(trelloAPIURL,id,field));
+	auto url = encode(format!`%s/1/checklists/%s/%s`(trelloAPIURL, id, field));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -1430,11 +1433,11 @@ string      fields                        'all' or a comma-separated list of che
 auto checklists(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/checklists/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/checklists/%s`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -1454,11 +1457,11 @@ string      fields                        'all' or a comma-separated list of boa
 auto checklistsBoard(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/checklists/%s/board`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/checklists/%s/board`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -1474,11 +1477,11 @@ string      id                            ID of a checklist.
 auto checklistsCards(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/checklists/%s/cards`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/checklists/%s/cards`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -1499,11 +1502,11 @@ string      fields                        One of: 'all', 'name', 'nameData', 'po
 auto checklistsCheckItems(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/checklists/%s/checkItems`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/checklists/%s/checkItems`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -1523,11 +1526,11 @@ string      fields                        One of: 'all', 'name', 'nameData', 'po
 auto checklistsCheckItems(string id, string idCheckItem, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/checklists/%s/checkItems/%s`(trelloAPIURL,id,idCheckItem));
+	auto url = encode(format!`%s/1/checklists/%s/checkItems/%s`(trelloAPIURL, id, idCheckItem));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -1543,11 +1546,11 @@ string      id                            ID of the customfield.
 auto customFieldsOptions(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/customFields/%s/options`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/customFields/%s/options`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -1565,11 +1568,11 @@ string      idCustomFieldOption           ID of the customfieldoption to retriev
 auto customFieldsOptions(string id, string idCustomFieldOption)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/customFields/%s/options/%s`(trelloAPIURL,id,idCustomFieldOption));
+	auto url = encode(format!`%s/1/customFields/%s/options/%s`(trelloAPIURL, id, idCustomFieldOption));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -1586,11 +1589,11 @@ string      id                            ID of the customfield to retrieve.
 auto custom_fields_object(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/customfields/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/customfields/%s`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -1607,11 +1610,11 @@ string      id                            ID of the customfield to retrieve.
 auto customfields(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/customfields/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/customfields/%s`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -1628,15 +1631,15 @@ string      id                            The ID of the commentCard action to de
 void delActions(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/actions/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/actions/%s`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -1649,15 +1652,15 @@ string      id                            The ID of the reaction
 void delActionsReactions(string idAction, string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/actions/%s/reactions/%s`(trelloAPIURL,idAction,id));
+	auto url = encode(format!`%s/1/actions/%s/reactions/%s`(trelloAPIURL, idAction, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -1669,15 +1672,15 @@ string      id                            The id of the board to delete
 void delBoards(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/boards/%s`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -1690,15 +1693,15 @@ string      idPlugin                      The ID of the Power-Up to disable
 void delBoardsBoardPlugins(string id, string idPlugin)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/boardPlugins/%s`(trelloAPIURL,id,idPlugin));
+	auto url = encode(format!`%s/1/boards/%s/boardPlugins/%s`(trelloAPIURL, id, idPlugin));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -1712,15 +1715,15 @@ string      idMember                      The id, username, or organization name
 void delBoardsMembers(string id, string idMember)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/members/%s`(trelloAPIURL,id,idMember));
+	auto url = encode(format!`%s/1/boards/%s/members/%s`(trelloAPIURL, id, idMember));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -1734,15 +1737,15 @@ string      powerUp                       The Power-Up to be enabled on the boar
 void delBoardsPowerUps(string id, string powerUp)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/powerUps/%s`(trelloAPIURL,id,powerUp));
+	auto url = encode(format!`%s/1/boards/%s/powerUps/%s`(trelloAPIURL, id, powerUp));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -1754,15 +1757,15 @@ string      id                            The ID of the card
 void delCards(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/cards/%s`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -1775,15 +1778,15 @@ string      idAction                      The ID of the comment action
 void delCardsActionsComments(string id, string idAction)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/actions/%s/comments`(trelloAPIURL,id,idAction));
+	auto url = encode(format!`%s/1/cards/%s/actions/%s/comments`(trelloAPIURL, id, idAction));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -1796,15 +1799,15 @@ string      idAttachment                  The ID of the attachment to delete
 void delCardsAttachments(string id, string idAttachment)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/attachments/%s`(trelloAPIURL,id,idAttachment));
+	auto url = encode(format!`%s/1/cards/%s/attachments/%s`(trelloAPIURL, id, idAttachment));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -1817,15 +1820,15 @@ string      idCheckItem                   The ID of the checklist item to delete
 void delCardsCheckItem(string id, string idCheckItem)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/checkItem/%s`(trelloAPIURL,id,idCheckItem));
+	auto url = encode(format!`%s/1/cards/%s/checkItem/%s`(trelloAPIURL, id, idCheckItem));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -1838,15 +1841,15 @@ string      idChecklist                   The ID of the checklist to delete
 void delCardsChecklists(string id, string idChecklist)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/checklists/%s`(trelloAPIURL,id,idChecklist));
+	auto url = encode(format!`%s/1/cards/%s/checklists/%s`(trelloAPIURL, id, idChecklist));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -1859,15 +1862,15 @@ string      idLabel                       The ID of the label to remove
 void delCardsIdLabels(string id, string idLabel)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/idLabels/%s`(trelloAPIURL,id,idLabel));
+	auto url = encode(format!`%s/1/cards/%s/idLabels/%s`(trelloAPIURL, id, idLabel));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -1880,15 +1883,15 @@ string      idMember                      The ID of the member to remove from th
 void delCardsIdMembers(string id, string idMember)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/idMembers/%s`(trelloAPIURL,id,idMember));
+	auto url = encode(format!`%s/1/cards/%s/idMembers/%s`(trelloAPIURL, id, idMember));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -1901,15 +1904,15 @@ string      idMember                      The ID of the member whose vote to rem
 void delCardsMembersVoted(string id, string idMember)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/membersVoted/%s`(trelloAPIURL,id,idMember));
+	auto url = encode(format!`%s/1/cards/%s/membersVoted/%s`(trelloAPIURL, id, idMember));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -1922,15 +1925,15 @@ string      idSticker                     The ID of the sticker to remove from t
 void delCardsStickers(string id, string idSticker)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/stickers/%s`(trelloAPIURL,id,idSticker));
+	auto url = encode(format!`%s/1/cards/%s/stickers/%s`(trelloAPIURL, id, idSticker));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -1942,15 +1945,15 @@ string      id                            ID of a checklist.
 void delChecklists(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/checklists/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/checklists/%s`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -1963,15 +1966,15 @@ string      idCheckItem                   ID of the checklist item to delete.
 void delChecklistsCheckItems(string id, string idCheckItem)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/checklists/%s/checkItems/%s`(trelloAPIURL,id,idCheckItem));
+	auto url = encode(format!`%s/1/checklists/%s/checkItems/%s`(trelloAPIURL, id, idCheckItem));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -1983,15 +1986,15 @@ string      id                            ID of the customfield to delete.
 void delCustomfields(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/customfields/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/customfields/%s`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -2004,15 +2007,15 @@ string      idCustomFieldOption           ID of the customfieldoption to delete.
 void delCustomfieldsOptions(string id, string idCustomFieldOption)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/customfields/%s/options/%s`(trelloAPIURL,id,idCustomFieldOption));
+	auto url = encode(format!`%s/1/customfields/%s/options/%s`(trelloAPIURL, id, idCustomFieldOption));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -2024,15 +2027,15 @@ string      id                            The ID of the label to delete.
 void delLabels(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/labels/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/labels/%s`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -2045,15 +2048,15 @@ string      idBackground                  The ID of the board background to dele
 void delMembersBoardBackgrounds(string id, string idBackground)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/boardBackgrounds/%s`(trelloAPIURL,id,idBackground));
+	auto url = encode(format!`%s/1/members/%s/boardBackgrounds/%s`(trelloAPIURL, id, idBackground));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -2066,15 +2069,15 @@ string      idStar                        The ID of the board star to remove
 void delMembersBoardStars(string id, string idStar)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/boardStars/%s`(trelloAPIURL,id,idStar));
+	auto url = encode(format!`%s/1/members/%s/boardStars/%s`(trelloAPIURL, id, idStar));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -2086,15 +2089,15 @@ string      id                            The ID or name of the organization
 void delOrganizations(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/organizations/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/organizations/%s`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -2106,15 +2109,15 @@ string      id                            The ID or name of the organization
 void delOrganizationsLogo(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/organizations/%s/logo`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/organizations/%s/logo`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -2127,15 +2130,15 @@ string      idMember                      The ID of the member to remove from th
 void delOrganizationsMembers(string id, string idMember)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/organizations/%s/members/%s`(trelloAPIURL,id,idMember));
+	auto url = encode(format!`%s/1/organizations/%s/members/%s`(trelloAPIURL, id, idMember));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -2148,15 +2151,15 @@ string      idMember                      The ID of the member to remove from th
 void delOrganizationsMembersAll(string id, string idMember)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/organizations/%s/members/%s/all`(trelloAPIURL,id,idMember));
+	auto url = encode(format!`%s/1/organizations/%s/members/%s/all`(trelloAPIURL, id, idMember));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -2168,15 +2171,15 @@ string      id                            The ID or name of the organization
 void delOrganizationsPrefsAssociatedDomain(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/organizations/%s/prefs/associatedDomain`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/organizations/%s/prefs/associatedDomain`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -2188,15 +2191,15 @@ string      id                            The ID or name of the organization
 void delOrganizationsPrefsOrgInviteRestrict(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/organizations/%s/prefs/orgInviteRestrict`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/organizations/%s/prefs/orgInviteRestrict`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -2209,15 +2212,15 @@ string      idTag                         The ID of the tag to delete
 void delOrganizationsTags(string id, string idTag)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/organizations/%s/tags/%s`(trelloAPIURL,id,idTag));
+	auto url = encode(format!`%s/1/organizations/%s/tags/%s`(trelloAPIURL, id, idTag));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -2229,15 +2232,15 @@ string      token
 void delTokens(string token)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/tokens/%s/`(trelloAPIURL,token));
+	auto url = encode(format!`%s/1/tokens/%s/`(trelloAPIURL, token));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -2250,15 +2253,15 @@ string      idWebhook                     ID of the [webhook](ref:webhooks) to d
 void delTokensWebhooks(string token, string idWebhook)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/tokens/%s/webhooks/%s`(trelloAPIURL,token,idWebhook));
+	auto url = encode(format!`%s/1/tokens/%s/webhooks/%s`(trelloAPIURL, token, idWebhook));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -2270,15 +2273,15 @@ string      id                            ID of the webhook to delete.
 void delWebhooks(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/webhooks/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/webhooks/%s`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().del(url,queryParams.queryParamMap);
+	newRequest().del(url, queryParams.queryParamMap);
 }
 
 
@@ -2292,9 +2295,9 @@ boolean     spritesheets                  'true' to return spritesheet URLs in t
 auto emoji(Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
 	auto url = encode(format!`%s/1/emoji`(trelloAPIURL));
 	queryParams["key"] = Variable(trelloSecret);
@@ -2357,11 +2360,11 @@ string      organization_memberships      Comma-seperated list of: 'me', 'normal
 auto enterprises(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/enterprises/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/enterprises/%s`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -2381,11 +2384,11 @@ string      fields                        Any valid value that the [nested membe
 auto enterprisesAdmins(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/enterprises/%s/admins`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/enterprises/%s/admins`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -2412,11 +2415,11 @@ string      board_fields                  Any valid value that the [nested board
 auto enterprisesMembers(string id, string idMember, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/enterprises/%s/members/%s`(trelloAPIURL,id,idMember));
+	auto url = encode(format!`%s/1/enterprises/%s/members/%s`(trelloAPIURL, id, idMember));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -2468,11 +2471,11 @@ string      board_fields                  Any valid value that the [nested board
 auto enterprisesMembers(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/enterprises/%s/members`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/enterprises/%s/members`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -2496,11 +2499,11 @@ boolean     tosAccepted                   Designates whether the user has seen/c
 auto enterprisesSignupUrl(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/enterprises/%s/signupUrl`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/enterprises/%s/signupUrl`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -2517,11 +2520,11 @@ string      idOrganization                An ID of an Organization resource.
 auto enterprisesTransferrableOrganization(string id, string idOrganization)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/enterprises/%s/transferrable/organization/%s`(trelloAPIURL,id,idOrganization));
+	auto url = encode(format!`%s/1/enterprises/%s/transferrable/organization/%s`(trelloAPIURL, id, idOrganization));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -2541,11 +2544,11 @@ string      fields                        all or a comma-separated list of [fiel
 auto labels(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/labels/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/labels/%s`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -2562,11 +2565,11 @@ string      field                         The field to return. See [fields](#lis
 auto lists(string id, string field)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/lists/%s/%s`(trelloAPIURL,id,field));
+	auto url = encode(format!`%s/1/lists/%s/%s`(trelloAPIURL, id, field));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -2586,11 +2589,11 @@ string      fields                        'all' or a comma separated list of [fi
 auto lists(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/lists/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/lists/%s`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -2606,11 +2609,11 @@ string      id                            The ID of the list
 auto listsActions(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/lists/%s/actions`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/lists/%s/actions`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -2631,11 +2634,11 @@ string      fields                        'all' or a comma-separated list of boa
 auto listsBoard(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/lists/%s/board`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/lists/%s/board`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -2651,11 +2654,11 @@ string      id                            The ID of the list
 auto listsCards(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/lists/%s/cards`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/lists/%s/cards`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -2673,11 +2676,11 @@ string      field                         One of the member [fields](ref:member-
 auto members(string id, string field)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/%s`(trelloAPIURL,id,field));
+	auto url = encode(format!`%s/1/members/%s/%s`(trelloAPIURL, id, field));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -2725,11 +2728,11 @@ string      tokens                        'all' or 'none'
 auto members(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/members/%s`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -2745,11 +2748,11 @@ string      id                            The ID or username of the member
 auto membersActions(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/actions`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/members/%s/actions`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -2771,11 +2774,11 @@ string      fields                        'all' or a comma-separated list of: 'b
 auto membersBoardBackgrounds(string id, string idBackground, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/boardBackgrounds/%s`(trelloAPIURL,id,idBackground));
+	auto url = encode(format!`%s/1/members/%s/boardBackgrounds/%s`(trelloAPIURL, id, idBackground));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -2794,11 +2797,11 @@ string      filter                        One of: 'all', 'custom', 'default', 'n
 auto membersBoardBackgrounds(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/boardBackgrounds`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/members/%s/boardBackgrounds`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -2815,11 +2818,11 @@ string      idStar                        The ID of the board star
 auto membersBoardStars(string id, string idStar)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/boardStars/%s`(trelloAPIURL,id,idStar));
+	auto url = encode(format!`%s/1/members/%s/boardStars/%s`(trelloAPIURL, id, idStar));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -2836,11 +2839,11 @@ string      id                            The ID or username of the member
 auto membersBoardStars(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/boardStars`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/members/%s/boardStars`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -2870,11 +2873,11 @@ string      organization_fields           'all' or a comma-separated list of org
 auto membersBoards(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/boards`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/members/%s/boards`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -2894,11 +2897,11 @@ string      fields                        'all' or a comma-separated list of boa
 auto membersBoardsInvited(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/boardsInvited`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/members/%s/boardsInvited`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -2917,11 +2920,11 @@ string      filter                        One of: 'all', 'closed', 'none', 'open
 auto membersCards(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/cards`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/members/%s/cards`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -2941,11 +2944,11 @@ string      fields                        'all' or a comma-separated list of 'na
 auto membersCustomEmoji(string id, string idEmoji, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/customEmoji/%s`(trelloAPIURL,id,idEmoji));
+	auto url = encode(format!`%s/1/members/%s/customEmoji/%s`(trelloAPIURL, id, idEmoji));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -2961,11 +2964,11 @@ string      id                            The ID or username of the member
 auto membersCustomEmoji(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/customEmoji`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/members/%s/customEmoji`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -2997,11 +3000,11 @@ string      memberCreator_fields          'all' or a comma-separated list of mem
 auto membersNotifications(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/notifications`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/members/%s/notifications`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -3024,11 +3027,11 @@ boolean     paid_account
 auto membersOrganizations(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/organizations`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/members/%s/organizations`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -3048,11 +3051,11 @@ string      fields                        'all' or a comma-separated list of org
 auto membersOrganizationsInvited(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/organizationsInvited`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/members/%s/organizationsInvited`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -3071,11 +3074,11 @@ boolean     webhooks                      Whether to include webhooks
 auto membersTokens(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/tokens`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/members/%s/tokens`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -3091,11 +3094,11 @@ string      id                            The ID or username of the member
 auto membersUploadedStickers(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/customStickers`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/members/%s/customStickers`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -3134,11 +3137,11 @@ string      organization_fields           'all' or a comma-separated list of org
 auto notifications(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/notifications/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/notifications/%s`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -3155,11 +3158,11 @@ string      field                         A notification [field](ref:notifcation
 auto notifications(string id, string field)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/notifications/%s/%s`(trelloAPIURL,id,field));
+	auto url = encode(format!`%s/1/notifications/%s/%s`(trelloAPIURL, id, field));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -3180,11 +3183,11 @@ string      fields                        'all' or a comma-separated list of
 auto notificationsBoard(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/notifications/%s/board`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/notifications/%s/board`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -3204,11 +3207,11 @@ string      fields                        'all' or a comma-separated list of car
 auto notificationsCard(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/notifications/%s/card`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/notifications/%s/card`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -3228,11 +3231,11 @@ string      fields                        'all' or a comma-separated list of lis
 auto notificationsList(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/notifications/%s/list`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/notifications/%s/list`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -3252,11 +3255,11 @@ string      fields                        'all' or a comma-separated list of mem
 auto notificationsMember(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/notifications/%s/member`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/notifications/%s/member`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -3276,11 +3279,11 @@ string      fields                        'all' or a comma-separated list of mem
 auto notificationsMemberCreator(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/notifications/%s/memberCreator`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/notifications/%s/memberCreator`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -3300,11 +3303,11 @@ string      fields                        'all' or a comma-separated list of org
 auto notificationsOrganization(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/notifications/%s/organization`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/notifications/%s/organization`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -3320,11 +3323,11 @@ string      id
 auto openCardsOnBoard(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/cards`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/boards/%s/cards`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -3342,11 +3345,11 @@ string      field                         An organization [field](ref:organizati
 auto organizations(string id, string field)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/organizations/%s/%s`(trelloAPIURL,id,field));
+	auto url = encode(format!`%s/1/organizations/%s/%s`(trelloAPIURL, id, field));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -3363,11 +3366,11 @@ string      id                            The ID or name of the organization
 auto organizations(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/organizations/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/organizations/%s`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -3384,11 +3387,11 @@ string      id                            The ID or name of the organization
 auto organizationsActions(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/organizations/%s/actions`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/organizations/%s/actions`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -3411,11 +3414,11 @@ string      fields                        'all' or a comma-separated list of boa
 auto organizationsBoards(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/organizations/%s/boards`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/organizations/%s/boards`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -3431,11 +3434,11 @@ string      id                            The ID or name of the organization
 auto organizationsExports(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/organizations/%s/exports`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/organizations/%s/exports`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -3452,11 +3455,11 @@ string      id                            The ID or name of the organization
 auto organizationsMembers(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/organizations/%s/members`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/organizations/%s/members`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -3477,11 +3480,11 @@ string      fields                        'all' or a comma-separated list of mem
 auto organizationsMembersInvited(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/organizations/%s/membersInvited`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/organizations/%s/membersInvited`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -3501,11 +3504,11 @@ boolean     member                        Whether to include the member object i
 auto organizationsMemberships(string id, string idMembership, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/organizations/%s/memberships/%s`(trelloAPIURL,id,idMembership));
+	auto url = encode(format!`%s/1/organizations/%s/memberships/%s`(trelloAPIURL, id, idMembership));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -3526,11 +3529,11 @@ boolean     member                        Whether to include the member objects 
 auto organizationsMemberships(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/organizations/%s/memberships`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/organizations/%s/memberships`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -3547,11 +3550,11 @@ string      idBoard                       The ID of the board to check for new b
 auto organizationsNewBillableGuests(string id, string idBoard)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/organizations/%s/newBillableGuests/%s`(trelloAPIURL,id,idBoard));
+	auto url = encode(format!`%s/1/organizations/%s/newBillableGuests/%s`(trelloAPIURL, id, idBoard));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -3568,11 +3571,11 @@ string      id                            The ID or name of the organization
 auto organizationsPluginData(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/organizations/%s/pluginData`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/organizations/%s/pluginData`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -3589,11 +3592,11 @@ string      id                            The ID or name of the organization
 auto organizationsTags(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/organizations/%s/tags`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/organizations/%s/tags`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -3610,11 +3613,11 @@ string      id                            The ID or name of the organization
 auto plugin_object(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/plugins/%s/`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/plugins/%s/`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -3631,11 +3634,11 @@ string      id                            The ID or name of the organization
 auto plugins(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/plugins/%s/`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/plugins/%s/`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -3652,11 +3655,11 @@ string      id                            The ID of the Power-Up
 auto pluginsComplianceMemberPrivacy(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/plugins/%s/compliance/memberPrivacy`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/plugins/%s/compliance/memberPrivacy`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -3683,11 +3686,11 @@ string      unified                       The 'unified' value of the emoji to ad
 auto postActionsReactions(string idAction, string shortName = null, string skinVariation = null, string native = null, string unified = null)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/actions/%s/reactions`(trelloAPIURL,idAction));
+	auto url = encode(format!`%s/1/actions/%s/reactions`(trelloAPIURL, idAction));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -3731,9 +3734,9 @@ string      prefs_cardAging               Determines the type of card aging that
 auto postBoards(Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
 	auto url = encode(format!`%s/1/boards/`(trelloAPIURL));
 	queryParams["key"] = Variable(trelloSecret);
@@ -3754,11 +3757,11 @@ string      idPlugin                      The ID of the Power-Up to enable
 auto postBoardsBoardPlugins(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/boardPlugins`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/boards/%s/boardPlugins`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
@@ -3774,11 +3777,11 @@ string      id                            The id of the board to update
 auto postBoardsCalendarKeyGenerate(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/calendarKey/generate`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/boards/%s/calendarKey/generate`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -3795,11 +3798,11 @@ string      id                            The id of the board to update
 auto postBoardsEmailKeyGenerate(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/emailKey/generate`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/boards/%s/emailKey/generate`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -3820,11 +3823,11 @@ string      value                         The id of a tag from the organization 
 auto postBoardsIdTags(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/idTags`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/boards/%s/idTags`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
@@ -3846,11 +3849,11 @@ string      color                         Sets the color of the new label. Valid
 auto postBoardsLabels(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/labels`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/boards/%s/labels`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
@@ -3872,11 +3875,11 @@ string      pos                           Determines the position of the list. V
 auto postBoardsLists(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/lists`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/boards/%s/lists`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
@@ -3892,11 +3895,11 @@ string      id                            The id of the board to update
 auto postBoardsMarkedAsViewed(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/markedAsViewed`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/boards/%s/markedAsViewed`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -3917,11 +3920,11 @@ string      value                         The Power-Up to be enabled on the boar
 auto postBoardsPowerUps(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/powerUps`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/boards/%s/powerUps`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
@@ -3955,9 +3958,9 @@ string      coordinates                   For use with/by the Map Power-Up. Shou
 auto postCards(Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
 	auto url = encode(format!`%s/1/cards`(trelloAPIURL));
 	queryParams["key"] = Variable(trelloSecret);
@@ -3978,11 +3981,11 @@ string      text                          The comment
 auto postCardsActionsComments(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/actions/comments`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/cards/%s/actions/comments`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
@@ -4004,11 +4007,11 @@ string      url                           A URL to attach. Must start with 'http
 auto postCardsAttachments(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/attachments`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/cards/%s/attachments`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
@@ -4030,11 +4033,11 @@ string      pos                           The position of the checklist on the c
 auto postCardsChecklists(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/checklists`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/cards/%s/checklists`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
@@ -4053,11 +4056,11 @@ string      value                         The ID of the label to add
 auto postCardsIdLabels(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/idLabels`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/cards/%s/idLabels`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
@@ -4076,11 +4079,11 @@ string      value                         The ID of the member to add to the car
 auto postCardsIdMembers(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/idMembers`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/cards/%s/idMembers`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
@@ -4101,11 +4104,11 @@ string      name                          A name for the label
 auto postCardsLabels(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/labels`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/cards/%s/labels`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
@@ -4121,11 +4124,11 @@ string      id                            The ID of the card
 auto postCardsMarkAssociatedNotificationsRead(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/markAssociatedNotificationsRead`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/cards/%s/markAssociatedNotificationsRead`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -4145,11 +4148,11 @@ string      value                         The ID of the member to vote 'yes' on 
 auto postCardsMembersVoted(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/membersVoted`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/cards/%s/membersVoted`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
@@ -4174,11 +4177,11 @@ float       rotate                        The rotation of the sticker
 auto postCardsStickers(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/stickers`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/cards/%s/stickers`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
@@ -4199,9 +4202,9 @@ string      idChecklistSource             The ID of a checklist to copy into the
 auto postChecklists(Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
 	auto url = encode(format!`%s/1/checklists`(trelloAPIURL));
 	queryParams["key"] = Variable(trelloSecret);
@@ -4227,11 +4230,11 @@ boolean     checked                       Determines whether the check item is a
 auto postChecklistsCheckItems(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/checklists/%s/checkItems`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/checklists/%s/checkItems`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
@@ -4258,9 +4261,9 @@ boolean     display_cardFront             Whether this custom field should be sh
 auto postCustomFields(string idModel, string modelType, string name, string type, string pos, string options = null, bool display_cardFront = false)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
 	auto url = encode(format!`%s/1/customFields`(trelloAPIURL));
 	Variable[string] queryParams;
@@ -4279,11 +4282,11 @@ string      id                            ID of the customfield.
 auto postCustomFieldsOptions(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/customFields/%s/options`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/customFields/%s/options`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -4303,11 +4306,11 @@ string      expiration                    One of: '1hour', '1day', '30days', 'ne
 auto postEnterprisesTokens(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/enterprises/%s/tokens`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/enterprises/%s/tokens`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
@@ -4326,9 +4329,9 @@ string      idBoard                       The ID of the board to create the labe
 auto postLabels(Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
 	auto url = encode(format!`%s/1/labels`(trelloAPIURL));
 	queryParams["key"] = Variable(trelloSecret);
@@ -4350,9 +4353,9 @@ string      pos                           Position of the list. 'top', 'bottom',
 auto postLists(Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
 	auto url = encode(format!`%s/1/lists`(trelloAPIURL));
 	queryParams["key"] = Variable(trelloSecret);
@@ -4370,11 +4373,11 @@ string      id                            The ID of the list
 auto postListsArchiveAllCards(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/lists/%s/archiveAllCards`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/lists/%s/archiveAllCards`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -4395,11 +4398,11 @@ string      idList                        The ID of the list that the cards shou
 auto postListsMoveAllCards(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/lists/%s/moveAllCards`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/lists/%s/moveAllCards`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
@@ -4418,11 +4421,11 @@ file        file
 auto postMembersAvatar(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/avatar`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/members/%s/avatar`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
@@ -4441,11 +4444,11 @@ file        file
 auto postMembersBoardBackgrounds(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/boardBackgrounds`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/members/%s/boardBackgrounds`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
@@ -4466,11 +4469,11 @@ string      pos                           The position of the newly starred boar
 auto postMembersBoardStars(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/boardStars`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/members/%s/boardStars`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
@@ -4490,11 +4493,11 @@ string      name                          Name for the emoji. 2 - 64 characters
 auto postMembersCustomEmoji(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/customEmoji`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/members/%s/customEmoji`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
@@ -4513,11 +4516,11 @@ string      value                         The message to dismiss
 auto postMembersOneTimeMessagesDismissed(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/oneTimeMessagesDismissed`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/members/%s/oneTimeMessagesDismissed`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
@@ -4530,9 +4533,9 @@ auto postMembersOneTimeMessagesDismissed(string id, Variable[string] queryParams
 auto postNotificationsAllRead()
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
 	auto url = encode(format!`%s/1/notifications/all/read`(trelloAPIURL));
 	Variable[string] queryParams;
@@ -4556,9 +4559,9 @@ string      website                       A URL starting with 'http://' or 'http
 auto postOrganizations(Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
 	auto url = encode(format!`%s/1/organizations`(trelloAPIURL));
 	queryParams["key"] = Variable(trelloSecret);
@@ -4579,11 +4582,11 @@ boolean     attachments                   Whether the CSV should include attachm
 auto postOrganizationsExports(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/organizations/%s/exports`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/organizations/%s/exports`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
@@ -4602,11 +4605,11 @@ file        file                          Image file for the logo
 auto postOrganizationsLogo(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/organizations/%s/logo`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/organizations/%s/logo`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
@@ -4625,11 +4628,11 @@ string      name                          The name for the new collection
 auto postOrganizationsTags(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/organizations/%s/tags`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/organizations/%s/tags`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
@@ -4652,11 +4655,11 @@ string      name                          The name to use for the given locale.
 auto postPluginsListing(string idPlugin, string description = null, string locale = null, string overview = null, string name = null)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/plugins/%s/listing`(trelloAPIURL,idPlugin));
+	auto url = encode(format!`%s/1/plugins/%s/listing`(trelloAPIURL, idPlugin));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -4679,11 +4682,11 @@ string      idModel                       ID of the object to create a webhook o
 auto postTokensWebhooks(string token, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/tokens/%s/webhooks`(trelloAPIURL,token));
+	auto url = encode(format!`%s/1/tokens/%s/webhooks`(trelloAPIURL, token));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
@@ -4704,9 +4707,9 @@ boolean     active                        Determines whether the webhook is acti
 auto postWebhooks(Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
 	auto url = encode(format!`%s/1/webhooks/`(trelloAPIURL));
 	queryParams["key"] = Variable(trelloSecret);
@@ -4727,11 +4730,11 @@ file        file
 auto postmembersUploadedStickers(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/customStickers`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/members/%s/customStickers`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
@@ -4750,14 +4753,14 @@ string      text                          The new text for the comment
 void putActions(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/actions/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/actions/%s`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -4772,14 +4775,14 @@ string      value                         The new text for the comment
 void putActionsText(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/actions/%s/text`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/actions/%s/text`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -4819,14 +4822,14 @@ string      labelNames_blue               Name for the blue label. 1 to 16384 ch
 void putBoards(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/boards/%s`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -4849,14 +4852,14 @@ string      type                          Valid values: admin, normal, observer.
 void putBoardsMembers(string id, string fullName = null, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/members`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/boards/%s/members`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -4875,14 +4878,14 @@ boolean     allowBillableGuest            Optional param that allows organizatio
 void putBoardsMembers(string id, string idMember, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/members/%s`(trelloAPIURL,id,idMember));
+	auto url = encode(format!`%s/1/boards/%s/members/%s`(trelloAPIURL, id, idMember));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -4902,14 +4905,14 @@ string      member_fields                 Valid values: all, avatarHash, bio, bi
 void putBoardsMemberships(string id, string idMembership, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/memberships/%s`(trelloAPIURL,id,idMembership));
+	auto url = encode(format!`%s/1/boards/%s/memberships/%s`(trelloAPIURL, id, idMembership));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -4925,14 +4928,14 @@ string      value                         Valid values: bottom, top. Determines 
 void putBoardsMyPrefsEmailPosition(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/myPrefs/emailPosition`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/boards/%s/myPrefs/emailPosition`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -4947,14 +4950,14 @@ string      value                         The id of an email list.
 void putBoardsMyPrefsIdEmailList(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/myPrefs/idEmailList`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/boards/%s/myPrefs/idEmailList`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -4969,14 +4972,14 @@ boolean     value                         Determines whether to show the list gu
 void putBoardsMyPrefsShowListGuide(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/myPrefs/showListGuide`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/boards/%s/myPrefs/showListGuide`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -4991,14 +4994,14 @@ boolean     value                         Determines whether to show the side ba
 void putBoardsMyPrefsShowSidebar(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/myPrefs/showSidebar`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/boards/%s/myPrefs/showSidebar`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5013,14 +5016,14 @@ boolean     value                         Determines whether to show sidebar act
 void putBoardsMyPrefsShowSidebarActivity(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/myPrefs/showSidebarActivity`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/boards/%s/myPrefs/showSidebarActivity`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5035,14 +5038,14 @@ boolean     value                         Determines whether to show the sidebar
 void putBoardsMyPrefsShowSidebarBoardActions(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/myPrefs/showSidebarBoardActions`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/boards/%s/myPrefs/showSidebarBoardActions`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5058,14 +5061,14 @@ boolean     value                         Determines whether to show members of 
 void putBoardsMyPrefsShowSidebarMembers(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/boards/%s/myPrefs/showSidebarMembers`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/boards/%s/myPrefs/showSidebarMembers`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5082,15 +5085,15 @@ object      value                         An object containing the key and value
 void putCardCustomFieldItem(string idCard, string idCustomField, Variable[string] value)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/card/%s/customField/%s/item`(trelloAPIURL,idCard,idCustomField));
+	auto url = encode(format!`%s/1/card/%s/customField/%s/item`(trelloAPIURL, idCard, idCustomField));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5122,14 +5125,14 @@ string      coordinates                   For use with/by the Map Power-Up. Shou
 void putCards(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/cards/%s`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5145,14 +5148,14 @@ string      text                          The new text for the comment
 void putCardsActionsComments(string id, string idAction, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/actions/%s/comments`(trelloAPIURL,id,idAction));
+	auto url = encode(format!`%s/1/cards/%s/actions/%s/comments`(trelloAPIURL, id, idAction));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5171,14 +5174,14 @@ string      pos                           'top', 'bottom', or a positive float
 void putCardsCheckItem(string id, string idCheckItem, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/checkItem/%s`(trelloAPIURL,id,idCheckItem));
+	auto url = encode(format!`%s/1/cards/%s/checkItem/%s`(trelloAPIURL, id, idCheckItem));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5195,14 +5198,14 @@ string      pos                           'top', 'bottom', or a positive float
 void putCardsChecklistCheckItem(string idCard, string idCheckItem, string idChecklist, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/checklist/%s/checkItem/%s`(trelloAPIURL,idCard,idChecklist,idCheckItem));
+	auto url = encode(format!`%s/1/cards/%s/checklist/%s/checkItem/%s`(trelloAPIURL, idCard, idChecklist, idCheckItem));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5221,14 +5224,14 @@ float       rotate
 void putCardsStickers(string id, string idSticker, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/cards/%s/stickers/%s`(trelloAPIURL,id,idSticker));
+	auto url = encode(format!`%s/1/cards/%s/stickers/%s`(trelloAPIURL, id, idSticker));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5246,14 +5249,14 @@ string      pos                           Determines the position of the checkli
 void putChecklists(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/checklists/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/checklists/%s`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5269,14 +5272,14 @@ string      value                         The value to change the checklist name
 void putChecklistsName(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/checklists/%s/name`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/checklists/%s/name`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5294,15 +5297,15 @@ boolean     display_cardFront             Whether to display this custom field o
 void putCustomfields(string id, string name = null, double pos = double.nan, bool display_cardFront = false)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/customfields/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/customfields/%s`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5315,15 +5318,15 @@ string      idMember                      ID of member to be made an admin of en
 void putEnterprisesAdmins(string id, string idMember)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/enterprises/%s/admins/%s`(trelloAPIURL,id,idMember));
+	auto url = encode(format!`%s/1/enterprises/%s/admins/%s`(trelloAPIURL, id, idMember));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5347,14 +5350,14 @@ string      board_fields                  Any valid value that the [nested board
 void putEnterprisesMembersDeactivated(string id, string idMember, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/enterprises/%s/members/%s/deactivated`(trelloAPIURL,id,idMember));
+	auto url = encode(format!`%s/1/enterprises/%s/members/%s/deactivated`(trelloAPIURL, id, idMember));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5369,14 +5372,14 @@ string      idOrganization                ID of organization to be transferred t
 void putEnterprisesOrganizations(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/enterprises/%s/organizations`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/enterprises/%s/organizations`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5393,14 +5396,14 @@ string      color                         The new color for the label. See: [fie
 void putLabels(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/labels/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/labels/%s`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5416,14 +5419,14 @@ string      value                         The new color for the label. See: [fie
 void putLabelsColor(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/labels/%s/color`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/labels/%s/color`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5438,14 +5441,14 @@ string      value                         The new name for the label
 void putLabelsName(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/labels/%s/name`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/labels/%s/name`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5465,14 +5468,14 @@ boolean     subscribed                    Whether the active member is subscribe
 void putLists(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/lists/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/lists/%s`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5487,14 +5490,14 @@ boolean     value                         Set to true to close (archive) the lis
 void putListsClosed(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/lists/%s/closed`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/lists/%s/closed`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5509,14 +5512,14 @@ string      value                         The ID of the board to move the list t
 void putListsIdBoard(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/lists/%s/idBoard`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/lists/%s/idBoard`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5531,14 +5534,14 @@ string      value                         The new name for the list
 void putListsName(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/lists/%s/name`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/lists/%s/name`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5553,14 +5556,14 @@ string      value                         'top', 'bottom', or a positive float
 void putListsPos(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/lists/%s/pos`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/lists/%s/pos`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5576,14 +5579,14 @@ int         value                         A number between '0' and '5000' or emp
 void putListsSoftLimit(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/lists/%s/softLimit`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/lists/%s/softLimit`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5598,14 +5601,14 @@ boolean     value                         'true' to subscribe, 'false' to unsubs
 void putListsSubscribed(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/lists/%s/subscribed`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/lists/%s/subscribed`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5629,14 +5632,14 @@ int         prefs_minutesBetweenSummaries '-1' for disabled, '1', or '60'
 void putMembers(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/members/%s`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5653,14 +5656,14 @@ boolean     tile                          Whether the background should be tiled
 void putMembersBoardBackgrounds(string id, string idBackground, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/boardBackgrounds/%s`(trelloAPIURL,id,idBackground));
+	auto url = encode(format!`%s/1/members/%s/boardBackgrounds/%s`(trelloAPIURL, id, idBackground));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5677,14 +5680,14 @@ string      pos                           New position for the starred board. 't
 void putMembersBoardStars(string id, string idStar, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/members/%s/boardStars/%s`(trelloAPIURL,id,idStar));
+	auto url = encode(format!`%s/1/members/%s/boardStars/%s`(trelloAPIURL, id, idStar));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5699,14 +5702,14 @@ boolean     unread
 void putNotifications(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/notifications/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/notifications/%s`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5721,14 +5724,14 @@ boolean     value
 void putNotificationsUnread(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/notifications/%s/unread`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/notifications/%s/unread`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5761,14 +5764,14 @@ string      prefs_permissionLevel         Whether the team page is publicly visi
 void putOrganizations(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/organizations/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/organizations/%s`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5784,14 +5787,14 @@ string      type                          One of: 'admin', 'normal'
 void putOrganizationsMembers(string id, string idMember, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/organizations/%s/members/%s`(trelloAPIURL,id,idMember));
+	auto url = encode(format!`%s/1/organizations/%s/members/%s`(trelloAPIURL, id, idMember));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5809,14 +5812,14 @@ string      type                          One of: 'admin', 'normal'
 void putOrganizationsMembers(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/organizations/%s/members`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/organizations/%s/members`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5832,14 +5835,14 @@ boolean     value
 void putOrganizationsMembersDeactivated(string id, string idMember, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/organizations/%s/members/%s/deactivated`(trelloAPIURL,id,idMember));
+	auto url = encode(format!`%s/1/organizations/%s/members/%s/deactivated`(trelloAPIURL, id, idMember));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5851,15 +5854,15 @@ string      id                            The ID or name of the organization
 void putPlugins(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/plugins/%s/`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/plugins/%s/`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5879,15 +5882,15 @@ string      name                          The name to use for the given locale.
 void putPluginsListings(string idPlugin, string idListing, string description = null, string locale = null, string overview = null, string name = null)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/plugins/%s/listings/%s`(trelloAPIURL,idPlugin,idListing));
+	auto url = encode(format!`%s/1/plugins/%s/listings/%s`(trelloAPIURL, idPlugin, idListing));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5906,14 +5909,14 @@ string      idModel                       ID of the object to create a webhook o
 void putTokensWebhooks(string token, string webhookId, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/tokens/%s/webhooks/%s`(trelloAPIURL,token,webhookId));
+	auto url = encode(format!`%s/1/tokens/%s/webhooks/%s`(trelloAPIURL, token, webhookId));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5933,14 +5936,14 @@ boolean     active                        Determines whether the webhook is acti
 void putWebhooks(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/webhooks/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/webhooks/%s`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url,queryParams.queryParamMap);
+	newRequest().put(url, queryParams.queryParamMap);
 }
 
 
@@ -5995,9 +5998,9 @@ boolean     partial                       By default, Trello searches for each w
 auto search(Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
 	auto url = encode(format!`%s/1/search`(trelloAPIURL));
 	queryParams["key"] = Variable(trelloSecret);
@@ -6019,9 +6022,9 @@ boolean     onlyOrgMembers
 auto searchMembers(Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
 	auto url = encode(format!`%s/1/search/members/`(trelloAPIURL));
 	queryParams["key"] = Variable(trelloSecret);
@@ -6044,11 +6047,11 @@ boolean     webhooks                      Determines whether to include webhooks
 auto tokens(string token, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/tokens/%s`(trelloAPIURL,token));
+	auto url = encode(format!`%s/1/tokens/%s`(trelloAPIURL, token));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -6068,11 +6071,11 @@ string      fields                        'all' or a comma-separated list of val
 auto tokensMember(string token, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/tokens/%s/member`(trelloAPIURL,token));
+	auto url = encode(format!`%s/1/tokens/%s/member`(trelloAPIURL, token));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -6088,11 +6091,11 @@ string      token
 auto tokensWebhooks(string token)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/tokens/%s/webhooks`(trelloAPIURL,token));
+	auto url = encode(format!`%s/1/tokens/%s/webhooks`(trelloAPIURL, token));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -6110,11 +6113,11 @@ string      idWebhook                     ID of the [Webhooks](ref:webhooks) to 
 auto tokensWebhooks(string token, string idWebhook)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/tokens/%s/webhooks/%s`(trelloAPIURL,token,idWebhook));
+	auto url = encode(format!`%s/1/tokens/%s/webhooks/%s`(trelloAPIURL, token, idWebhook));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -6131,11 +6134,11 @@ string      id                            ID of the webhook to retrieve.
 auto webhooks(string id)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/webhooks/%s`(trelloAPIURL,id));
+	auto url = encode(format!`%s/1/webhooks/%s`(trelloAPIURL, id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -6154,11 +6157,11 @@ string      field                         Field to retrieve. One of: 'active', '
 auto webhooks(string id, string field)
 {
 	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
 
-	auto url = encode(format!`%s/1/webhooks/%s/%s`(trelloAPIURL,id,field));
+	auto url = encode(format!`%s/1/webhooks/%s/%s`(trelloAPIURL, id, field));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
