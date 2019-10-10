@@ -288,10 +288,11 @@ private void registerHandlerHelper(ref Handlers handlers)
 		organizations, organizationsActions, organizationsBoards, organizationsExports,
 		organizationsMembers, organizationsMembersInvited, organizationsMemberships,
 		organizationsNewBillableGuests, organizationsPluginData, organizationsTags,
-		postActionsReactions, postBoards, postBoardsBoardPlugins,
-		postBoardsCalendarKeyGenerate, postBoardsEmailKeyGenerate, postBoardsIdTags,
-		postBoardsLabels, postBoardsLists, postBoardsMarkedAsViewed, postBoardsPowerUps,
-		postCards, postCardsActionsComments, postCardsAttachments, postCardsChecklists,
+		plugin_object, plugins, pluginsComplianceMemberPrivacy, postActionsReactions,
+		postBoards, postBoardsBoardPlugins, postBoardsCalendarKeyGenerate,
+		postBoardsEmailKeyGenerate, postBoardsIdTags, postBoardsLabels, postBoardsLists,
+		postBoardsMarkedAsViewed, postBoardsPowerUps, postCards,
+		postCardsActionsComments, postCardsAttachments, postCardsChecklists,
 		postCardsIdLabels, postCardsIdMembers, postCardsLabels,
 		postCardsMarkAssociatedNotificationsRead, postCardsMembersVoted,
 		postCardsStickers, postChecklists, postChecklistsCheckItems, postCustomFields,
@@ -300,7 +301,7 @@ private void registerHandlerHelper(ref Handlers handlers)
 		postMembersBoardBackgrounds, postMembersBoardStars, postMembersCustomEmoji,
 		postMembersOneTimeMessagesDismissed, postNotificationsAllRead,
 		postOrganizations, postOrganizationsExports, postOrganizationsLogo,
-		postOrganizationsTags, postTokensWebhooks, postWebhooks,
+		postOrganizationsTags, postPluginsListing, postTokensWebhooks, postWebhooks,
 		postmembersUploadedStickers, putActions, putActionsText, putBoards,
 		putBoardsMembers, putBoardsMemberships, putBoardsMyPrefsEmailPosition,
 		putBoardsMyPrefsIdEmailList, putBoardsMyPrefsShowListGuide,
@@ -314,8 +315,8 @@ private void registerHandlerHelper(ref Handlers handlers)
 		putListsSubscribed, putMembers, putMembersBoardBackgrounds,
 		putMembersBoardStars, putNotifications, putNotificationsUnread,
 		putOrganizations, putOrganizationsMembers, putOrganizationsMembersDeactivated,
-		putTokensWebhooks, putWebhooks, search, searchMembers, tokens, tokensMember,
-		tokensWebhooks, webhooks,
+		putPlugins, putPluginsListings, putTokensWebhooks, putWebhooks, search,
+		searchMembers, tokens, tokensMember, tokensWebhooks, webhooks,
 	))
 	{
 		handlers.registerHandler!F;
@@ -2928,27 +2929,6 @@ auto membersCards(string id, Variable[string] queryParams = (Variable[string]).i
 }
 
 
-@SILdoc(`Get a member's uploaded custom emoji
-Required Params:
-string      id                            The ID or username of the member
-
-`)
-auto membersCustomEmoji(string id)
-{
-	import requests;
-	import std.uri: encode;
-	import std.array: array;
-	import std.format: format;
-
-	auto url = encode(format!`%s/1/members/%s/customEmoji`(trelloAPIURL,id));
-	Variable[string] queryParams;
-	queryParams["key"] = Variable(trelloSecret);
-	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
-	return result.asVariable;
-}
-
-
 @SILdoc(`Get a custom emoji
 Required Params:
 string      id                            The ID or username of the member
@@ -2966,6 +2946,27 @@ auto membersCustomEmoji(string id, string idEmoji, Variable[string] queryParams 
 	import std.format: format;
 
 	auto url = encode(format!`%s/1/members/%s/customEmoji/%s`(trelloAPIURL,id,idEmoji));
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
+}
+
+
+@SILdoc(`Get a member's uploaded custom emoji
+Required Params:
+string      id                            The ID or username of the member
+
+`)
+auto membersCustomEmoji(string id)
+{
+	import requests;
+	import std.uri: encode;
+	import std.array: array;
+	import std.format: format;
+
+	auto url = encode(format!`%s/1/members/%s/customEmoji`(trelloAPIURL,id));
+	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -3593,6 +3594,69 @@ auto organizationsTags(string id)
 	import std.format: format;
 
 	auto url = encode(format!`%s/1/organizations/%s/tags`(trelloAPIURL,id));
+	Variable[string] queryParams;
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            The ID or name of the organization
+
+`)
+auto plugin_object(string id)
+{
+	import requests;
+	import std.uri: encode;
+	import std.array: array;
+	import std.format: format;
+
+	auto url = encode(format!`%s/1/plugins/%s/`(trelloAPIURL,id));
+	Variable[string] queryParams;
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
+}
+
+
+@SILdoc(`Get plugins
+Required Params:
+string      id                            The ID or name of the organization
+
+`)
+auto plugins(string id)
+{
+	import requests;
+	import std.uri: encode;
+	import std.array: array;
+	import std.format: format;
+
+	auto url = encode(format!`%s/1/plugins/%s/`(trelloAPIURL,id));
+	Variable[string] queryParams;
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            The ID of the Power-Up
+
+`)
+auto pluginsComplianceMemberPrivacy(string id)
+{
+	import requests;
+	import std.uri: encode;
+	import std.array: array;
+	import std.format: format;
+
+	auto url = encode(format!`%s/1/plugins/%s/compliance/memberPrivacy`(trelloAPIURL,id));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -4573,6 +4637,34 @@ auto postOrganizationsTags(string id, Variable[string] queryParams = (Variable[s
 }
 
 
+@SILdoc(`Create a new listing for a given locale for your Power-Up
+Required Params:
+string      idPlugin                      The ID of the Power-Up for which you are creating a new
+                                          listing.
+
+Optional Params:
+string      description                   The description to show for the given locale
+string      locale                        The locale that this listing should be displayed for.
+string      overview                      The overview to show for the given locale.
+string      name                          The name to use for the given locale.
+
+`)
+auto postPluginsListing(string idPlugin, string description = null, string locale = null, string overview = null, string name = null)
+{
+	import requests;
+	import std.uri: encode;
+	import std.array: array;
+	import std.format: format;
+
+	auto url = encode(format!`%s/1/plugins/%s/listing`(trelloAPIURL,idPlugin));
+	Variable[string] queryParams;
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
+}
+
+
 @SILdoc(`Create a new webhook for a token.
 Required Params:
 string      token                         
@@ -4741,8 +4833,6 @@ void putBoards(string id, Variable[string] queryParams = (Variable[string]).init
 @SILdoc(`Update an existing board by id
 Required Params:
 string      id                            The id of the board to update
-string      type                          Valid values: admin, normal, observer. Determines what type
-                                          of member the user being added should be of the board.
 
 Optional Params:
 string      fullName                      The full name of the user to as a member of the board. Must
@@ -4752,9 +4842,11 @@ string      fullName                      The full name of the user to as a memb
 Query Params:
 string      email                         The email address of a user to add as a member of the
                                           board.
+string      type                          Valid values: admin, normal, observer. Determines what type
+                                          of member the user being added should be of the board.
 
 `)
-void putBoardsMembers(string id, string type, string fullName = null, Variable[string] queryParams = (Variable[string]).init)
+void putBoardsMembers(string id, string fullName = null, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri: encode;
@@ -5745,6 +5837,54 @@ void putOrganizationsMembersDeactivated(string id, string idMember, Variable[str
 	import std.format: format;
 
 	auto url = encode(format!`%s/1/organizations/%s/members/%s/deactivated`(trelloAPIURL,id,idMember));
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	newRequest().put(url,queryParams.queryParamMap);
+}
+
+
+@SILdoc(`Update a plugin
+Required Params:
+string      id                            The ID or name of the organization
+
+`)
+void putPlugins(string id)
+{
+	import requests;
+	import std.uri: encode;
+	import std.array: array;
+	import std.format: format;
+
+	auto url = encode(format!`%s/1/plugins/%s/`(trelloAPIURL,id));
+	Variable[string] queryParams;
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	newRequest().put(url,queryParams.queryParamMap);
+}
+
+
+@SILdoc(`Update an existing listing for your Power-Up
+Required Params:
+string      idPlugin                      The ID of the Power-Up whose listing is being updated.
+string      idListing                     The ID of the existing listing for the Power-Up that is
+                                          being updated.
+
+Optional Params:
+string      description                   The description to show for the given locale
+string      locale                        The locale that this listing should be displayed for.
+string      overview                      The overview to show for the given locale.
+string      name                          The name to use for the given locale.
+
+`)
+void putPluginsListings(string idPlugin, string idListing, string description = null, string locale = null, string overview = null, string name = null)
+{
+	import requests;
+	import std.uri: encode;
+	import std.array: array;
+	import std.format: format;
+
+	auto url = encode(format!`%s/1/plugins/%s/listings/%s`(trelloAPIURL,idPlugin,idListing));
+	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	newRequest().put(url,queryParams.queryParamMap);
