@@ -7,3 +7,10 @@ dependency "arrogant" version="~>0.3.0"
 targetType "executable"
 libs "modest"
 dependency "asdf" version="~>0.5.0"
+
+configuration "default" {
+}
+
+configuration "no-fetch" {
+	versions "NoFetch"
+}
