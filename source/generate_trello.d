@@ -20,17 +20,21 @@ string[] blacklist = [
 int main(string[] args)
 {
 	static import std.file;
-	import std.string:strip;
-	import std.algorithm:filter;
-	import std.conv:to;
-	import asdf:parseJson;
-	import std.stdio:stderr,writefln;
+	import std.string : strip;
+	import std.algorithm : filter;
+	import std.conv : to;
+	import asdf : parseJson;
+	import std.stdio : stderr, writefln;
 
-	auto actions = getAPIInfo("https://developers.trello.com/reference");
+	version (NoFetch)
+		auto actions = std.file.readText("trello.json");
+	else
+		auto actions = getAPIInfo("https://developers.trello.com/reference");
 	auto json = parseJson(actions);
-	std.file.write("trello.json",json.to!string);
+	version (NoFetch) {} else
+		std.file.write("trello.json", json.to!string);
 	auto apis = parseAPI(json);
-	std.file.write(targetFile,apis.generateAPI);
+	std.file.write(targetFile, apis.generateAPI);
 	stderr.writefln("success");
 	return 0;
 }
