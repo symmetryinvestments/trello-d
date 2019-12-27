@@ -1,3 +1,4 @@
+[![Build status](https://api.travis-ci.org/symmetryinvestments/trello-d.svg?branch=master](https://api.travis-ci.org/symmetryinvestments/trello-d)
 [![Build status](https://ci.appveyor.com/api/projects/status/agi5vgdrq27qaw5v/branch/master?svg=true)](https://ci.appveyor.com/project/Laeeth/trello-d-f7m8c/branch/master)
 
 # Trello API for the D programming language
