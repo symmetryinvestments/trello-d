@@ -155,7 +155,7 @@ before_build:
            $env:DC = "ldc2";
          }
   - call "c:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat" %arch% 8.1
-  - git clone https://github.com/lexborisov/Modest && cd Modest && mkdir build && cd build && cmake -G "Visual Studio 15 2017" -DMyHTML_BUILD_WITHOUT_THREADS=ON -DMyCORE_BUILD_WITHOUT_THREADS=ON --DCMAKE_BUILD_TYPE="RELEASE" .. && cmake --build . && cmake --install .
+  - git clone https://github.com/lexborisov/Modest && cd Modest && mkdir build && cd build && cmake -G "Visual Studio 15 2017" -DMyHTML_BUILD_WITHOUT_THREADS=ON -DMyCORE_BUILD_WITHOUT_THREADS=ON --DCMAKE_BUILD_TYPE="RELEASE" .. && cmake --build . && copy Debug\modestd.dll .. && REM cmake --install .
 
 build_script:
  - dub build --arch=%Darch% --compiler=%DC% --vverbose
