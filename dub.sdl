@@ -5,7 +5,8 @@ copyright "Copyright © 2019, Laeeth Isharc and Kaleidic Associates Advisory Lim
 license "MIT"
 dependency "arrogant" version="~>0.3.0"
 targetType "executable"
-libs "modest"
+libs "modest" platform="posix"
+
 dependency "asdf" version="~>0.5.0"
 
 configuration "default" {
