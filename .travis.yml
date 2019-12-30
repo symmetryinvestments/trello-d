@@ -21,6 +21,7 @@ matrix:
     - d: ldc-1.16.0
   allow_failures:
     - d: dmd-nightly
+    - d: dmd-2.089.0
 
 script:
   - bash -c ./travis.sh
