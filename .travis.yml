@@ -5,7 +5,7 @@ dist: bionic
 before_install:
   - sudo apt update
   - sudo apt install -y libssl-dev build-essential checkinstall zlib1g-dev
-  - cd ~ && git clone https://github.com/lexborisov/Modest && cd Modest && make && sudo make install
+  - pushd ~ && git clone https://github.com/lexborisov/Modest && cd Modest && make && sudo make install && popd
 
 install:
   - mkdir -p bin
@@ -23,7 +23,7 @@ matrix:
     - d: dmd-nightly
 
 script:
-  - ./travis.sh
+  - bash -c ./travis.sh
 
 after_success:
  - bash <(curl -s https://codecov.io/bash)
