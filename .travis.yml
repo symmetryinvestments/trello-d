@@ -8,7 +8,7 @@ before_install:
   - cd ~ && git clone https://github.com/lexborisov/Modest && cd Modest && make && sudo make install
 
 install:
-  - mkdir bin
+  - mkdir -p bin
 
 matrix:
   include:
