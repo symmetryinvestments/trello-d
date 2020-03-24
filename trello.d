@@ -29,12 +29,66 @@ version (Windows)
 {
 	immutable string caCertPath;
 
+	void __dummy_func() {}
+
+	auto thisModulePath()
+	{
+		import core.sys.windows.windef : HMODULE, TCHAR;
+		import core.sys.windows.winbase : GetModuleFileNameW, GetModuleHandleEx,
+			GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+			GetLastError, SetLastError;
+		import core.sys.windows.winnt : LPCWSTR;
+		import core.sys.windows.winerror : ERROR_INSUFFICIENT_BUFFER, NO_ERROR;
+		import std.exception : assumeUnique;
+		import std.windows.syserror : WindowsException;
+		import std.conv : to;
+
+		HMODULE hm = null;
+		if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
+			GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+			cast(LPCWSTR) &__dummy_func, &hm) == 0)
+		{
+			auto ret = GetLastError();
+			throw new WindowsException(ret, "GetModuleHandleEx failed",
+				__FILE__, __LINE__);
+		}
+
+		auto path = new TCHAR[](256);
+		while (true)
+		{
+			SetLastError(NO_ERROR);
+			auto pathLength = GetModuleFileNameW(hm, path.ptr, path.length.to!int);
+			if (pathLength == 0)
+			{
+				auto ret = GetLastError();
+				throw new WindowsException(ret, "GetModuleFileNameW failed",
+					__FILE__, __LINE__);
+			}
+			else if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+			{
+				path.length *= 2;
+				continue;
+			}
+			path = path[0 .. pathLength];
+			return path.assumeUnique;
+		}
+	}
+
 	shared static this()
 	{
-		import std.file : thisExePath;
-		import std.path : buildPath, dirName;
+		import std.path : dirName, buildPath;
+		import std.file : exists;
+		import std.range : only;
+		import std.conv : to;
+		import core.stdc.stdio : fputs, stderr;
 
-		caCertPath = dirName(thisExePath).buildPath("cacert.pem");
+		scope (failure)
+			fputs("Something has gone wrong setting up trello", stderr);
+
+		caCertPath = thisModulePath.dirName.to!string.buildPath("cacert.pem");
+
+		if (!caCertPath.exists)
+		    fputs(("Could not find certificates at " ~ caCertPath ~ '\0').ptr, stderr);
 	}
 
 	auto newRequest()
@@ -110,7 +164,7 @@ private void del(Request request, string uri, string[string] queryParams = (stri
 	request.exec!"DELETE"(uri);
 }
 
-private void put(Request request, string uri,string[string] queryParams = (string[string]).init)
+private void putWithParams(Request request, string uri, string[string] queryParams = (string[string]).init)
 {
 	import asdf : serializeToJson;
 	request.exec!"PUT"(uri, serializeToJson(queryParams));
@@ -259,7 +313,7 @@ void putMembersCustomBoardBackgrounds(string id, string idBackground, Variable[s
 	auto url = encode(format!`%s/1/members/%s//customBoardBackgrounds/%s`(trelloAPIURL, id, idBackground));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	newRequest().putWithParams(url, queryParams.queryParamMap);
 }
 
 
@@ -270,15 +324,17 @@ private void registerHandlerHelper(ref Handlers handlers)
 {
 	import std.meta : AliasSeq;
 	static foreach(F; AliasSeq!(
-		actions, actionsBoard, actionsCard, actionsDisplay, actionsList, actionsMember,
-		actionsMemberCreator, actionsOrganization, actionsReactions,
-		actionsReactionsSummary, batch, boards, boardsActions, boardsBoardPlugins,
-		boardsBoardStars, boardsChecklists, boardsLabels, boardsLists, boardsMembers,
-		boardsMemberships, boardsPlugins, cards, cardsActions, cardsAttachments,
+		actions, actions2, actionsBoard, actionsCard, actionsDisplay, actionsList,
+		actionsMember, actionsMemberCreator, actionsOrganization, actionsReactions,
+		actionsReactions2, actionsReactionsSummary, batch, boards, boards2,
+		boardsActions, boardsBoardPlugins, boardsBoardStars, boardsChecklists,
+		boardsLabels, boardsLists, boardsLists2, boardsMembers, boardsMemberships,
+		boardsPlugins, cards, cards2, cardsActions, cardsAttachments, cardsAttachments2,
 		cardsBoard, cardsCheckItem, cardsCheckItemStates, cardsChecklists,
 		cardsCustomFieldItems, cardsList, cardsMembers, cardsMembersVoted,
-		cardsPluginData, cardsStickers, checklists, checklistsBoard, checklistsCards,
-		checklistsCheckItems, customFieldsOptions, custom_fields_object, customfields,
+		cardsPluginData, cardsStickers, cardsStickers2, checklists, checklists2,
+		checklistsBoard, checklistsCards, checklistsCheckItems, checklistsCheckItems2,
+		customFieldsOptions, customFieldsOptions2, custom_fields_object, customfields,
 		delActions, delActionsReactions, delBoards, delBoardsBoardPlugins,
 		delBoardsMembers, delBoardsPowerUps, delCards, delCardsActionsComments,
 		delCardsAttachments, delCardsCheckItem, delCardsChecklists, delCardsIdLabels,
@@ -288,16 +344,19 @@ private void registerHandlerHelper(ref Handlers handlers)
 		delOrganizationsLogo, delOrganizationsMembers, delOrganizationsMembersAll,
 		delOrganizationsPrefsAssociatedDomain, delOrganizationsPrefsOrgInviteRestrict,
 		delOrganizationsTags, delTokens, delTokensWebhooks, delWebhooks, emoji,
-		enterprises, enterprisesAdmins, enterprisesMembers, enterprisesSignupUrl,
-		enterprisesTransferrableOrganization, labels, lists, listsActions, listsBoard,
-		listsCards, members, membersActions, membersBoardBackgrounds, membersBoardStars,
-		membersBoards, membersBoardsInvited, membersCards, membersCustomEmoji,
-		membersNotifications, membersOrganizations, membersOrganizationsInvited,
-		membersTokens, membersUploadedStickers, notifications, notificationsBoard,
+		enterprises, enterprisesAdmins, enterprisesMembers, enterprisesMembers2,
+		enterprisesSignupUrl, enterprisesTransferrableOrganization, labels, lists,
+		lists2, listsActions, listsBoard, listsCards, members, members2, membersActions,
+		membersBoardBackgrounds, membersBoardBackgrounds2, membersBoardStars,
+		membersBoardStars2, membersBoards, membersBoardsInvited, membersCards,
+		membersCustomEmoji, membersCustomEmoji2, membersNotifications,
+		membersOrganizations, membersOrganizationsInvited, membersTokens,
+		membersUploadedStickers, notifications, notifications2, notificationsBoard,
 		notificationsCard, notificationsList, notificationsMember,
 		notificationsMemberCreator, notificationsOrganization, openCardsOnBoard,
-		organizations, organizationsActions, organizationsBoards, organizationsExports,
-		organizationsMembers, organizationsMembersInvited, organizationsMemberships,
+		organizations, organizations2, organizationsActions, organizationsBoards,
+		organizationsExports, organizationsMembers, organizationsMembersInvited,
+		organizationsMemberships, organizationsMemberships2,
 		organizationsNewBillableGuests, organizationsPluginData, organizationsTags,
 		plugin_object, plugins, pluginsComplianceMemberPrivacy, postActionsReactions,
 		postBoards, postBoardsBoardPlugins, postBoardsCalendarKeyGenerate,
@@ -307,32 +366,65 @@ private void registerHandlerHelper(ref Handlers handlers)
 		postCardsIdLabels, postCardsIdMembers, postCardsLabels,
 		postCardsMarkAssociatedNotificationsRead, postCardsMembersVoted,
 		postCardsStickers, postChecklists, postChecklistsCheckItems, postCustomFields,
-		postCustomFieldsOptions, postEnterprisesTokens, postLabels, postLists,
-		postListsArchiveAllCards, postListsMoveAllCards, postMembersAvatar,
-		postMembersBoardBackgrounds, postMembersBoardStars, postMembersCustomEmoji,
+		postCustomFieldsOptions, postLabels, postLists, postListsArchiveAllCards,
+		postListsMoveAllCards, postMembersAvatar, postMembersBoardBackgrounds,
+		postMembersBoardStars, postMembersCustomEmoji,
 		postMembersOneTimeMessagesDismissed, postNotificationsAllRead,
 		postOrganizations, postOrganizationsExports, postOrganizationsLogo,
 		postOrganizationsTags, postPluginsListing, postTokensWebhooks, postWebhooks,
-		postmembersUploadedStickers, putActions, putActionsText, putBoards,
-		putBoardsMembers, putBoardsMemberships, putBoardsMyPrefsEmailPosition,
-		putBoardsMyPrefsIdEmailList, putBoardsMyPrefsShowListGuide,
-		putBoardsMyPrefsShowSidebar, putBoardsMyPrefsShowSidebarActivity,
-		putBoardsMyPrefsShowSidebarBoardActions, putBoardsMyPrefsShowSidebarMembers,
-		putCardCustomFieldItem, putCards, putCardsActionsComments, putCardsCheckItem,
-		putCardsChecklistCheckItem, putCardsStickers, putChecklists, putChecklistsName,
-		putCustomfields, putEnterprisesAdmins, putEnterprisesMembersDeactivated,
-		putEnterprisesOrganizations, putLabels, putLabelsColor, putLabelsName, putLists,
-		putListsClosed, putListsIdBoard, putListsName, putListsPos, putListsSoftLimit,
-		putListsSubscribed, putMembers, putMembersBoardBackgrounds,
-		putMembersBoardStars, putNotifications, putNotificationsUnread,
-		putOrganizations, putOrganizationsMembers, putOrganizationsMembersDeactivated,
-		putPlugins, putPluginsListings, putTokensWebhooks, putWebhooks, search,
-		searchMembers, tokens, tokensMember, tokensWebhooks, webhooks,
+		postmembersUploadedStickers, putwithparamsActions, putwithparamsActionsText,
+		putwithparamsBoards, putwithparamsBoardsMembers, putwithparamsBoardsMembers2,
+		putwithparamsBoardsMemberships, putwithparamsBoardsMyPrefsEmailPosition,
+		putwithparamsBoardsMyPrefsIdEmailList, putwithparamsBoardsMyPrefsShowListGuide,
+		putwithparamsBoardsMyPrefsShowSidebar,
+		putwithparamsBoardsMyPrefsShowSidebarActivity,
+		putwithparamsBoardsMyPrefsShowSidebarBoardActions,
+		putwithparamsBoardsMyPrefsShowSidebarMembers, putwithparamsCardCustomFieldItem,
+		putwithparamsCards, putwithparamsCardsActionsComments,
+		putwithparamsCardsCheckItem, putwithparamsCardsChecklistCheckItem,
+		putwithparamsCardsStickers, putwithparamsChecklists,
+		putwithparamsChecklistsName, putwithparamsCustomfields,
+		putwithparamsEnterprisesAdmins, putwithparamsEnterprisesMembersDeactivated,
+		putwithparamsEnterprisesOrganizations, putwithparamsLabels,
+		putwithparamsLabelsColor, putwithparamsLabelsName, putwithparamsLists,
+		putwithparamsListsClosed, putwithparamsListsIdBoard, putwithparamsListsName,
+		putwithparamsListsPos, putwithparamsListsSoftLimit,
+		putwithparamsListsSubscribed, putwithparamsMembers,
+		putwithparamsMembersBoardBackgrounds, putwithparamsMembersBoardStars,
+		putwithparamsNotifications, putwithparamsNotificationsUnread,
+		putwithparamsOrganizations, putwithparamsOrganizationsMembers,
+		putwithparamsOrganizationsMembers2,
+		putwithparamsOrganizationsMembersDeactivated, putwithparamsPlugins,
+		putwithparamsPluginsListings, putwithparamsTokensWebhooks,
+		putwithparamsWebhooks, search, searchMembers, tokens, tokensMember,
+		tokensWebhooks, tokensWebhooks2, webhooks, webhooks2,
 	))
 	{
 		handlers.registerHandler!F;
 	}
 }
+
+@SILdoc(`Get a specific property of an action
+Required Params:
+string      id                            The ID of the action
+string      field                         An action [field](ref:action-object)
+
+`)
+auto actions2(string id, string field)
+{
+	import requests;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
+
+	auto url = encode(format!`%s/1/actions/%s/%s`(trelloAPIURL, id, field));
+	Variable[string] queryParams;
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
+}
+
 
 @SILdoc(`Get information about an action
 Required Params:
@@ -360,28 +452,6 @@ auto actions(string id, Variable[string] queryParams = (Variable[string]).init)
 	import std.format : format;
 
 	auto url = encode(format!`%s/1/actions/%s`(trelloAPIURL, id));
-	queryParams["key"] = Variable(trelloSecret);
-	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
-	return result.asVariable;
-}
-
-
-@SILdoc(`Get a specific property of an action
-Required Params:
-string      id                            The ID of the action
-string      field                         An action [field](ref:action-object)
-
-`)
-auto actions(string id, string field)
-{
-	import requests;
-	import std.uri : encode;
-	import std.array : array;
-	import std.format : format;
-
-	auto url = encode(format!`%s/1/actions/%s/%s`(trelloAPIURL, id, field));
-	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -554,6 +624,32 @@ auto actionsOrganization(string id, Variable[string] queryParams = (Variable[str
 }
 
 
+@SILdoc(`Get information for a reaction
+Required Params:
+string      idAction                      The ID of the action
+string      id                            The ID of the reaction
+
+Query Params:
+boolean     member                        Whether to load the member as a nested resource. See
+                                          [Members Nested Resource](#members-nested-resource)
+boolean     emoji                         Whether to load the emoji as a nested resource.
+
+`)
+auto actionsReactions2(string idAction, string id, Variable[string] queryParams = (Variable[string]).init)
+{
+	import requests;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
+
+	auto url = encode(format!`%s/1/actions/%s/reactions/%s`(trelloAPIURL, idAction, id));
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
+}
+
+
 @SILdoc(`List reactions for an action
 Required Params:
 string      idAction                      The ID of the action
@@ -572,32 +668,6 @@ auto actionsReactions(string idAction, Variable[string] queryParams = (Variable[
 	import std.format : format;
 
 	auto url = encode(format!`%s/1/actions/%s/reactions`(trelloAPIURL, idAction));
-	queryParams["key"] = Variable(trelloSecret);
-	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
-	return result.asVariable;
-}
-
-
-@SILdoc(`Get information for a reaction
-Required Params:
-string      idAction                      The ID of the action
-string      id                            The ID of the reaction
-
-Query Params:
-boolean     member                        Whether to load the member as a nested resource. See
-                                          [Members Nested Resource](#members-nested-resource)
-boolean     emoji                         Whether to load the emoji as a nested resource.
-
-`)
-auto actionsReactions(string idAction, string id, Variable[string] queryParams = (Variable[string]).init)
-{
-	import requests;
-	import std.uri : encode;
-	import std.array : array;
-	import std.format : format;
-
-	auto url = encode(format!`%s/1/actions/%s/reactions/%s`(trelloAPIURL, idAction, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -642,6 +712,32 @@ auto batch(Variable[string] queryParams = (Variable[string]).init)
 	import std.format : format;
 
 	auto url = encode(format!`%s/1/batch`(trelloAPIURL));
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            The ID of the board.
+string      field                         The field you'd like to receive. Valid values: closed,
+                                          dateLastActivity, dateLastView, desc, descData,
+                                          idOrganization, invitations, invited, labelNames,
+                                          memberships, name, pinned, powerUps, prefs, shortLink,
+                                          shortUrl, starred, subscribed, url.
+
+`)
+auto boards2(string id, string field)
+{
+	import requests;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
+
+	auto url = encode(format!`%s/1/boards/%s/%s`(trelloAPIURL, id, field));
+	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -714,32 +810,6 @@ auto boards(string id, Variable[string] queryParams = (Variable[string]).init)
 	import std.format : format;
 
 	auto url = encode(format!`%s/1/boards/%s`(trelloAPIURL, id));
-	queryParams["key"] = Variable(trelloSecret);
-	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
-	return result.asVariable;
-}
-
-
-@SILdoc(`
-Required Params:
-string      id                            The ID of the board.
-string      field                         The field you'd like to receive. Valid values: closed,
-                                          dateLastActivity, dateLastView, desc, descData,
-                                          idOrganization, invitations, invited, labelNames,
-                                          memberships, name, pinned, powerUps, prefs, shortLink,
-                                          shortUrl, starred, subscribed, url.
-
-`)
-auto boards(string id, string field)
-{
-	import requests;
-	import std.uri : encode;
-	import std.array : array;
-	import std.format : format;
-
-	auto url = encode(format!`%s/1/boards/%s/%s`(trelloAPIURL, id, field));
-	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -865,7 +935,7 @@ string      id                            The ID of the board
 string      filter                        One of 'all', 'closed', 'none', 'open'
 
 `)
-auto boardsLists(string id, string filter)
+auto boardsLists2(string id, string filter)
 {
 	import requests;
 	import std.uri : encode;
@@ -984,6 +1054,28 @@ auto boardsPlugins(string id, Variable[string] queryParams = (Variable[string]).
 }
 
 
+@SILdoc(`Get a specific property of a card
+Required Params:
+string      id                            The id of the card
+string      field                         The desired field. One of [fields](ref:card-object)
+
+`)
+auto cards2(string id, string field)
+{
+	import requests;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
+
+	auto url = encode(format!`%s/1/cards/%s/%s`(trelloAPIURL, id, field));
+	Variable[string] queryParams;
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
+}
+
+
 @SILdoc(`Get a card by its ID
 Required Params:
 string      id                            The ID of the card
@@ -1041,28 +1133,6 @@ auto cards(string id, Variable[string] queryParams = (Variable[string]).init)
 }
 
 
-@SILdoc(`Get a specific property of a card
-Required Params:
-string      id                            The id of the card
-string      field                         The desired field. One of [fields](ref:card-object)
-
-`)
-auto cards(string id, string field)
-{
-	import requests;
-	import std.uri : encode;
-	import std.array : array;
-	import std.format : format;
-
-	auto url = encode(format!`%s/1/cards/%s/%s`(trelloAPIURL, id, field));
-	Variable[string] queryParams;
-	queryParams["key"] = Variable(trelloSecret);
-	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
-	return result.asVariable;
-}
-
-
 @SILdoc(`List the actions on a card
 Required Params:
 string      id                            The ID of the card
@@ -1094,7 +1164,7 @@ string      fields                        'all' or a comma-separated list of att
                                           [fields](ref:attachments)
 
 `)
-auto cardsAttachments(string id, string idAttachment, Variable[string] queryParams = (Variable[string]).init)
+auto cardsAttachments2(string id, string idAttachment, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -1359,7 +1429,7 @@ string      fields                        'all' or a comma-separated list of sti
                                           [fields](ref:stickers)
 
 `)
-auto cardsStickers(string id, string idSticker, Variable[string] queryParams = (Variable[string]).init)
+auto cardsStickers2(string id, string idSticker, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -1404,7 +1474,7 @@ string      id                            ID of a checklist.
 string      field                         A checklist [field](ref:checklist-object)
 
 `)
-auto checklists(string id, string field)
+auto checklists2(string id, string field)
 {
 	import requests;
 	import std.uri : encode;
@@ -1501,6 +1571,30 @@ auto checklistsCards(string id)
 @SILdoc(`
 Required Params:
 string      id                            ID of a checklist.
+string      idCheckItem                   ID of the check item to retrieve.
+
+Query Params:
+string      fields                        One of: 'all', 'name', 'nameData', 'pos', 'state', 'type'.
+
+`)
+auto checklistsCheckItems2(string id, string idCheckItem, Variable[string] queryParams = (Variable[string]).init)
+{
+	import requests;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
+
+	auto url = encode(format!`%s/1/checklists/%s/checkItems/%s`(trelloAPIURL, id, idCheckItem));
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
+}
+
+
+@SILdoc(`
+Required Params:
+string      id                            ID of a checklist.
 
 Query Params:
 string      filter                        One of: 'all', 'none'.
@@ -1524,21 +1618,19 @@ auto checklistsCheckItems(string id, Variable[string] queryParams = (Variable[st
 
 @SILdoc(`
 Required Params:
-string      id                            ID of a checklist.
-string      idCheckItem                   ID of the check item to retrieve.
-
-Query Params:
-string      fields                        One of: 'all', 'name', 'nameData', 'pos', 'state', 'type'.
+string      id                            ID of the customfielditem.
+string      idCustomFieldOption           ID of the customfieldoption to retrieve.
 
 `)
-auto checklistsCheckItems(string id, string idCheckItem, Variable[string] queryParams = (Variable[string]).init)
+auto customFieldsOptions2(string id, string idCustomFieldOption)
 {
 	import requests;
 	import std.uri : encode;
 	import std.array : array;
 	import std.format : format;
 
-	auto url = encode(format!`%s/1/checklists/%s/checkItems/%s`(trelloAPIURL, id, idCheckItem));
+	auto url = encode(format!`%s/1/customFields/%s/options/%s`(trelloAPIURL, id, idCustomFieldOption));
+	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -1559,28 +1651,6 @@ auto customFieldsOptions(string id)
 	import std.format : format;
 
 	auto url = encode(format!`%s/1/customFields/%s/options`(trelloAPIURL, id));
-	Variable[string] queryParams;
-	queryParams["key"] = Variable(trelloSecret);
-	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
-	return result.asVariable;
-}
-
-
-@SILdoc(`
-Required Params:
-string      id                            ID of the customfielditem.
-string      idCustomFieldOption           ID of the customfieldoption to retrieve.
-
-`)
-auto customFieldsOptions(string id, string idCustomFieldOption)
-{
-	import requests;
-	import std.uri : encode;
-	import std.array : array;
-	import std.format : format;
-
-	auto url = encode(format!`%s/1/customFields/%s/options/%s`(trelloAPIURL, id, idCustomFieldOption));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -2420,7 +2490,7 @@ string      board_fields                  Any valid value that the [nested board
                                           accepts.
 
 `)
-auto enterprisesMembers(string id, string idMember, Variable[string] queryParams = (Variable[string]).init)
+auto enterprisesMembers2(string id, string idMember, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -2570,7 +2640,7 @@ string      id                            The ID of the list
 string      field                         The field to return. See [fields](#list-object)
 
 `)
-auto lists(string id, string field)
+auto lists2(string id, string field)
 {
 	import requests;
 	import std.uri : encode;
@@ -2681,7 +2751,7 @@ string      id                            The ID or username of the member
 string      field                         One of the member [fields](ref:member-object)
 
 `)
-auto members(string id, string field)
+auto members2(string id, string field)
 {
 	import requests;
 	import std.uri : encode;
@@ -2779,7 +2849,7 @@ string      fields                        'all' or a comma-separated list of: 'b
                                           'fullSizeUrl', 'scaled', 'tile'
 
 `)
-auto membersBoardBackgrounds(string id, string idBackground, Variable[string] queryParams = (Variable[string]).init)
+auto membersBoardBackgrounds2(string id, string idBackground, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -2823,7 +2893,7 @@ string      id                            The ID or username of the member
 string      idStar                        The ID of the board star
 
 `)
-auto membersBoardStars(string id, string idStar)
+auto membersBoardStars2(string id, string idStar)
 {
 	import requests;
 	import std.uri : encode;
@@ -2949,7 +3019,7 @@ Query Params:
 string      fields                        'all' or a comma-separated list of 'name', 'url'
 
 `)
-auto membersCustomEmoji(string id, string idEmoji, Variable[string] queryParams = (Variable[string]).init)
+auto membersCustomEmoji2(string id, string idEmoji, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -3115,6 +3185,28 @@ auto membersUploadedStickers(string id)
 }
 
 
+@SILdoc(`Get a specific property of a notification
+Required Params:
+string      id                            The ID of the notification
+string      field                         A notification [field](ref:notifcation-object)
+
+`)
+auto notifications2(string id, string field)
+{
+	import requests;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
+
+	auto url = encode(format!`%s/1/notifications/%s/%s`(trelloAPIURL, id, field));
+	Variable[string] queryParams;
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
+}
+
+
 @SILdoc(`
 Required Params:
 string      id                            The ID of the notification
@@ -3150,28 +3242,6 @@ auto notifications(string id, Variable[string] queryParams = (Variable[string]).
 	import std.format : format;
 
 	auto url = encode(format!`%s/1/notifications/%s`(trelloAPIURL, id));
-	queryParams["key"] = Variable(trelloSecret);
-	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
-	return result.asVariable;
-}
-
-
-@SILdoc(`Get a specific property of a notification
-Required Params:
-string      id                            The ID of the notification
-string      field                         A notification [field](ref:notifcation-object)
-
-`)
-auto notifications(string id, string field)
-{
-	import requests;
-	import std.uri : encode;
-	import std.array : array;
-	import std.format : format;
-
-	auto url = encode(format!`%s/1/notifications/%s/%s`(trelloAPIURL, id, field));
-	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
 	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
@@ -3350,7 +3420,7 @@ string      id                            The ID or name of the organization
 string      field                         An organization [field](ref:organization-object)
 
 `)
-auto organizations(string id, string field)
+auto organizations2(string id, string field)
 {
 	import requests;
 	import std.uri : encode;
@@ -3509,7 +3579,7 @@ Query Params:
 boolean     member                        Whether to include the member object in the response
 
 `)
-auto organizationsMemberships(string id, string idMembership, Variable[string] queryParams = (Variable[string]).init)
+auto organizationsMemberships2(string id, string idMembership, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -3636,7 +3706,7 @@ auto plugin_object(string id)
 
 @SILdoc(`Get plugins
 Required Params:
-string      id                            The ID or name of the organization
+string      id                            The ID of the plugin
 
 `)
 auto plugins(string id)
@@ -4303,29 +4373,6 @@ auto postCustomFieldsOptions(string id)
 }
 
 
-@SILdoc(`Generate an auth token for an enterprise.
-Required Params:
-string      id                            ID of the enterprise to retrieve.
-
-Query Params:
-string      expiration                    One of: '1hour', '1day', '30days', 'never'
-
-`)
-auto postEnterprisesTokens(string id, Variable[string] queryParams = (Variable[string]).init)
-{
-	import requests;
-	import std.uri : encode;
-	import std.array : array;
-	import std.format : format;
-
-	auto url = encode(format!`%s/1/enterprises/%s/tokens`(trelloAPIURL, id));
-	queryParams["key"] = Variable(trelloSecret);
-	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (newRequest().post(url,queryParams.queryParamMap).responseBody.array);
-	return result.asVariable;
-}
-
-
 @SILdoc(`Create a new label on a board.
 Query Params:
 string      name                          Name for the label
@@ -4758,7 +4805,7 @@ Query Params:
 string      text                          The new text for the comment
 
 `)
-void putActions(string id, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsActions(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -4768,7 +4815,8 @@ void putActions(string id, Variable[string] queryParams = (Variable[string]).ini
 	auto url = encode(format!`%s/1/actions/%s`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -4780,7 +4828,7 @@ Query Params:
 string      value                         The new text for the comment
 
 `)
-void putActionsText(string id, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsActionsText(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -4790,7 +4838,8 @@ void putActionsText(string id, Variable[string] queryParams = (Variable[string])
 	auto url = encode(format!`%s/1/actions/%s/text`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -4827,7 +4876,7 @@ string      labelNames_purple             Name for the purple label. 1 to 16384 
 string      labelNames_blue               Name for the blue label. 1 to 16384 characters long
 
 `)
-void putBoards(string id, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsBoards(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -4837,7 +4886,35 @@ void putBoards(string id, Variable[string] queryParams = (Variable[string]).init
 	auto url = encode(format!`%s/1/boards/%s`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
+}
+
+
+@SILdoc(`Add a member to the board.
+Required Params:
+string      id                            The id of the board to update
+string      idMember                      The id of the member to add to the board.
+
+Query Params:
+string      type                          One of: admin, normal, observer. Determines the type of
+                                          member this user will be on the board.
+boolean     allowBillableGuest            Optional param that allows organization admins to add
+                                          multi-board guests onto a board.
+
+`)
+auto putwithparamsBoardsMembers2(string id, string idMember, Variable[string] queryParams = (Variable[string]).init)
+{
+	import requests;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
+
+	auto url = encode(format!`%s/1/boards/%s/members/%s`(trelloAPIURL, id, idMember));
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -4857,7 +4934,7 @@ string      type                          Valid values: admin, normal, observer.
                                           of member the user being added should be of the board.
 
 `)
-void putBoardsMembers(string id, string fullName = null, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsBoardsMembers(string id, string fullName = null, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -4867,33 +4944,8 @@ void putBoardsMembers(string id, string fullName = null, Variable[string] queryP
 	auto url = encode(format!`%s/1/boards/%s/members`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
-}
-
-
-@SILdoc(`Add a member to the board.
-Required Params:
-string      id                            The id of the board to update
-string      idMember                      The id of the member to add to the board.
-
-Query Params:
-string      type                          One of: admin, normal, observer. Determines the type of
-                                          member this user will be on the board.
-boolean     allowBillableGuest            Optional param that allows organization admins to add
-                                          multi-board guests onto a board.
-
-`)
-void putBoardsMembers(string id, string idMember, Variable[string] queryParams = (Variable[string]).init)
-{
-	import requests;
-	import std.uri : encode;
-	import std.array : array;
-	import std.format : format;
-
-	auto url = encode(format!`%s/1/boards/%s/members/%s`(trelloAPIURL, id, idMember));
-	queryParams["key"] = Variable(trelloSecret);
-	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -4910,7 +4962,7 @@ string      member_fields                 Valid values: all, avatarHash, bio, bi
                                           status, url, username
 
 `)
-void putBoardsMemberships(string id, string idMembership, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsBoardsMemberships(string id, string idMembership, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -4920,7 +4972,8 @@ void putBoardsMemberships(string id, string idMembership, Variable[string] query
 	auto url = encode(format!`%s/1/boards/%s/memberships/%s`(trelloAPIURL, id, idMembership));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -4933,7 +4986,7 @@ string      value                         Valid values: bottom, top. Determines 
                                           email address.
 
 `)
-void putBoardsMyPrefsEmailPosition(string id, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsBoardsMyPrefsEmailPosition(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -4943,7 +4996,8 @@ void putBoardsMyPrefsEmailPosition(string id, Variable[string] queryParams = (Va
 	auto url = encode(format!`%s/1/boards/%s/myPrefs/emailPosition`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -4955,7 +5009,7 @@ Query Params:
 string      value                         The id of an email list.
 
 `)
-void putBoardsMyPrefsIdEmailList(string id, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsBoardsMyPrefsIdEmailList(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -4965,7 +5019,8 @@ void putBoardsMyPrefsIdEmailList(string id, Variable[string] queryParams = (Vari
 	auto url = encode(format!`%s/1/boards/%s/myPrefs/idEmailList`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -4977,7 +5032,7 @@ Query Params:
 boolean     value                         Determines whether to show the list guide.
 
 `)
-void putBoardsMyPrefsShowListGuide(string id, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsBoardsMyPrefsShowListGuide(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -4987,7 +5042,8 @@ void putBoardsMyPrefsShowListGuide(string id, Variable[string] queryParams = (Va
 	auto url = encode(format!`%s/1/boards/%s/myPrefs/showListGuide`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -4999,7 +5055,7 @@ Query Params:
 boolean     value                         Determines whether to show the side bar.
 
 `)
-void putBoardsMyPrefsShowSidebar(string id, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsBoardsMyPrefsShowSidebar(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5009,7 +5065,8 @@ void putBoardsMyPrefsShowSidebar(string id, Variable[string] queryParams = (Vari
 	auto url = encode(format!`%s/1/boards/%s/myPrefs/showSidebar`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5021,7 +5078,7 @@ Query Params:
 boolean     value                         Determines whether to show sidebar activity.
 
 `)
-void putBoardsMyPrefsShowSidebarActivity(string id, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsBoardsMyPrefsShowSidebarActivity(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5031,7 +5088,8 @@ void putBoardsMyPrefsShowSidebarActivity(string id, Variable[string] queryParams
 	auto url = encode(format!`%s/1/boards/%s/myPrefs/showSidebarActivity`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5043,7 +5101,7 @@ Query Params:
 boolean     value                         Determines whether to show the sidebar board actions.
 
 `)
-void putBoardsMyPrefsShowSidebarBoardActions(string id, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsBoardsMyPrefsShowSidebarBoardActions(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5053,7 +5111,8 @@ void putBoardsMyPrefsShowSidebarBoardActions(string id, Variable[string] queryPa
 	auto url = encode(format!`%s/1/boards/%s/myPrefs/showSidebarBoardActions`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5066,7 +5125,7 @@ boolean     value                         Determines whether to show members of 
                                           sidebar.
 
 `)
-void putBoardsMyPrefsShowSidebarMembers(string id, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsBoardsMyPrefsShowSidebarMembers(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5076,7 +5135,8 @@ void putBoardsMyPrefsShowSidebarMembers(string id, Variable[string] queryParams 
 	auto url = encode(format!`%s/1/boards/%s/myPrefs/showSidebarMembers`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5090,7 +5150,7 @@ object      value                         An object containing the key and value
                                           match the type of Custom Field defined.
 
 `)
-void putCardCustomFieldItem(string idCard, string idCustomField, Variable[string] value)
+auto putwithparamsCardCustomFieldItem(string idCard, string idCustomField, Variable[string] value)
 {
 	import requests;
 	import std.uri : encode;
@@ -5101,7 +5161,8 @@ void putCardCustomFieldItem(string idCard, string idCustomField, Variable[string
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5130,7 +5191,7 @@ string      coordinates                   For use with/by the Map Power-Up. Shou
                                           latitude,longitude
 
 `)
-void putCards(string id, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsCards(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5140,7 +5201,8 @@ void putCards(string id, Variable[string] queryParams = (Variable[string]).init)
 	auto url = encode(format!`%s/1/cards/%s`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5153,7 +5215,7 @@ Query Params:
 string      text                          The new text for the comment
 
 `)
-void putCardsActionsComments(string id, string idAction, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsCardsActionsComments(string id, string idAction, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5163,7 +5225,8 @@ void putCardsActionsComments(string id, string idAction, Variable[string] queryP
 	auto url = encode(format!`%s/1/cards/%s/actions/%s/comments`(trelloAPIURL, id, idAction));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5179,7 +5242,7 @@ string      idChecklist                   The ID of the checklist this item is i
 string      pos                           'top', 'bottom', or a positive float
 
 `)
-void putCardsCheckItem(string id, string idCheckItem, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsCardsCheckItem(string id, string idCheckItem, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5189,7 +5252,8 @@ void putCardsCheckItem(string id, string idCheckItem, Variable[string] queryPara
 	auto url = encode(format!`%s/1/cards/%s/checkItem/%s`(trelloAPIURL, id, idCheckItem));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5203,7 +5267,7 @@ Query Params:
 string      pos                           'top', 'bottom', or a positive float
 
 `)
-void putCardsChecklistCheckItem(string idCard, string idCheckItem, string idChecklist, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsCardsChecklistCheckItem(string idCard, string idCheckItem, string idChecklist, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5213,7 +5277,8 @@ void putCardsChecklistCheckItem(string idCard, string idCheckItem, string idChec
 	auto url = encode(format!`%s/1/cards/%s/checklist/%s/checkItem/%s`(trelloAPIURL, idCard, idChecklist, idCheckItem));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5229,7 +5294,7 @@ int         zIndex
 float       rotate                        
 
 `)
-void putCardsStickers(string id, string idSticker, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsCardsStickers(string id, string idSticker, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5239,7 +5304,8 @@ void putCardsStickers(string id, string idSticker, Variable[string] queryParams 
 	auto url = encode(format!`%s/1/cards/%s/stickers/%s`(trelloAPIURL, id, idSticker));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5254,7 +5320,7 @@ string      pos                           Determines the position of the checkli
                                           of: 'top', 'bottom', or a positive number.
 
 `)
-void putChecklists(string id, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsChecklists(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5264,7 +5330,8 @@ void putChecklists(string id, Variable[string] queryParams = (Variable[string]).
 	auto url = encode(format!`%s/1/checklists/%s`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5277,7 +5344,7 @@ string      value                         The value to change the checklist name
                                           string of length 1 to 16384.
 
 `)
-void putChecklistsName(string id, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsChecklistsName(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5287,7 +5354,8 @@ void putChecklistsName(string id, Variable[string] queryParams = (Variable[strin
 	auto url = encode(format!`%s/1/checklists/%s/name`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5302,7 +5370,7 @@ float       pos                           New position for the custom field. Can
 boolean     display_cardFront             Whether to display this custom field on the front of cards
 
 `)
-void putCustomfields(string id, string name = null, double pos = double.nan, bool display_cardFront = false)
+auto putwithparamsCustomfields(string id, string name = null, double pos = double.nan, bool display_cardFront = false)
 {
 	import requests;
 	import std.uri : encode;
@@ -5313,7 +5381,8 @@ void putCustomfields(string id, string name = null, double pos = double.nan, boo
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5323,7 +5392,7 @@ string      id                            ID of the enterprise to retrieve.
 string      idMember                      ID of member to be made an admin of enterprise.
 
 `)
-void putEnterprisesAdmins(string id, string idMember)
+auto putwithparamsEnterprisesAdmins(string id, string idMember)
 {
 	import requests;
 	import std.uri : encode;
@@ -5334,7 +5403,8 @@ void putEnterprisesAdmins(string id, string idMember)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5355,7 +5425,7 @@ string      board_fields                  Any valid value that the [nested board
                                           accepts.
 
 `)
-void putEnterprisesMembersDeactivated(string id, string idMember, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsEnterprisesMembersDeactivated(string id, string idMember, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5365,7 +5435,8 @@ void putEnterprisesMembersDeactivated(string id, string idMember, Variable[strin
 	auto url = encode(format!`%s/1/enterprises/%s/members/%s/deactivated`(trelloAPIURL, id, idMember));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5377,7 +5448,7 @@ Query Params:
 string      idOrganization                ID of organization to be transferred to enterprise.
 
 `)
-void putEnterprisesOrganizations(string id, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsEnterprisesOrganizations(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5387,7 +5458,8 @@ void putEnterprisesOrganizations(string id, Variable[string] queryParams = (Vari
 	auto url = encode(format!`%s/1/enterprises/%s/organizations`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5401,7 +5473,7 @@ string      color                         The new color for the label. See: [fie
                                           for color options
 
 `)
-void putLabels(string id, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsLabels(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5411,7 +5483,8 @@ void putLabels(string id, Variable[string] queryParams = (Variable[string]).init
 	auto url = encode(format!`%s/1/labels/%s`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5424,7 +5497,7 @@ string      value                         The new color for the label. See: [fie
                                           for color options.
 
 `)
-void putLabelsColor(string id, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsLabelsColor(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5434,7 +5507,8 @@ void putLabelsColor(string id, Variable[string] queryParams = (Variable[string])
 	auto url = encode(format!`%s/1/labels/%s/color`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5446,7 +5520,7 @@ Query Params:
 string      value                         The new name for the label
 
 `)
-void putLabelsName(string id, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsLabelsName(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5456,7 +5530,8 @@ void putLabelsName(string id, Variable[string] queryParams = (Variable[string]).
 	auto url = encode(format!`%s/1/labels/%s/name`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5473,7 +5548,7 @@ string      pos                           New position for the list: 'top', 'bot
 boolean     subscribed                    Whether the active member is subscribed to this list
 
 `)
-void putLists(string id, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsLists(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5483,7 +5558,8 @@ void putLists(string id, Variable[string] queryParams = (Variable[string]).init)
 	auto url = encode(format!`%s/1/lists/%s`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5495,7 +5571,7 @@ Query Params:
 boolean     value                         Set to true to close (archive) the list
 
 `)
-void putListsClosed(string id, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsListsClosed(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5505,7 +5581,8 @@ void putListsClosed(string id, Variable[string] queryParams = (Variable[string])
 	auto url = encode(format!`%s/1/lists/%s/closed`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5517,7 +5594,7 @@ Query Params:
 string      value                         The ID of the board to move the list to
 
 `)
-void putListsIdBoard(string id, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsListsIdBoard(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5527,7 +5604,8 @@ void putListsIdBoard(string id, Variable[string] queryParams = (Variable[string]
 	auto url = encode(format!`%s/1/lists/%s/idBoard`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5539,7 +5617,7 @@ Query Params:
 string      value                         The new name for the list
 
 `)
-void putListsName(string id, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsListsName(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5549,7 +5627,8 @@ void putListsName(string id, Variable[string] queryParams = (Variable[string]).i
 	auto url = encode(format!`%s/1/lists/%s/name`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5561,7 +5640,7 @@ Query Params:
 string      value                         'top', 'bottom', or a positive float
 
 `)
-void putListsPos(string id, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsListsPos(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5571,7 +5650,8 @@ void putListsPos(string id, Variable[string] queryParams = (Variable[string]).in
 	auto url = encode(format!`%s/1/lists/%s/pos`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5584,7 +5664,7 @@ int         value                         A number between '0' and '5000' or emp
                                           limit
 
 `)
-void putListsSoftLimit(string id, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsListsSoftLimit(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5594,7 +5674,8 @@ void putListsSoftLimit(string id, Variable[string] queryParams = (Variable[strin
 	auto url = encode(format!`%s/1/lists/%s/softLimit`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5606,7 +5687,7 @@ Query Params:
 boolean     value                         'true' to subscribe, 'false' to unsubscribe
 
 `)
-void putListsSubscribed(string id, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsListsSubscribed(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5616,7 +5697,8 @@ void putListsSubscribed(string id, Variable[string] queryParams = (Variable[stri
 	auto url = encode(format!`%s/1/lists/%s/subscribed`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5637,7 +5719,7 @@ string      prefs_locale
 int         prefs_minutesBetweenSummaries '-1' for disabled, '1', or '60'
 
 `)
-void putMembers(string id, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsMembers(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5647,7 +5729,8 @@ void putMembers(string id, Variable[string] queryParams = (Variable[string]).ini
 	auto url = encode(format!`%s/1/members/%s`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5661,7 +5744,7 @@ string      brightness                    One of: 'dark', 'light', 'unknown'
 boolean     tile                          Whether the background should be tiled
 
 `)
-void putMembersBoardBackgrounds(string id, string idBackground, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsMembersBoardBackgrounds(string id, string idBackground, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5671,7 +5754,8 @@ void putMembersBoardBackgrounds(string id, string idBackground, Variable[string]
 	auto url = encode(format!`%s/1/members/%s/boardBackgrounds/%s`(trelloAPIURL, id, idBackground));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5685,7 +5769,7 @@ string      pos                           New position for the starred board. 't
                                           positive float.
 
 `)
-void putMembersBoardStars(string id, string idStar, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsMembersBoardStars(string id, string idStar, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5695,7 +5779,8 @@ void putMembersBoardStars(string id, string idStar, Variable[string] queryParams
 	auto url = encode(format!`%s/1/members/%s/boardStars/%s`(trelloAPIURL, id, idStar));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5707,7 +5792,7 @@ Query Params:
 boolean     unread                        
 
 `)
-void putNotifications(string id, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsNotifications(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5717,7 +5802,8 @@ void putNotifications(string id, Variable[string] queryParams = (Variable[string
 	auto url = encode(format!`%s/1/notifications/%s`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5729,7 +5815,7 @@ Query Params:
 boolean     value                         
 
 `)
-void putNotificationsUnread(string id, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsNotificationsUnread(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5739,7 +5825,8 @@ void putNotificationsUnread(string id, Variable[string] queryParams = (Variable[
 	auto url = encode(format!`%s/1/notifications/%s/unread`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5769,7 +5856,7 @@ string      prefs_permissionLevel         Whether the team page is publicly visi
                                           'private', 'public'
 
 `)
-void putOrganizations(string id, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsOrganizations(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5779,7 +5866,8 @@ void putOrganizations(string id, Variable[string] queryParams = (Variable[string
 	auto url = encode(format!`%s/1/organizations/%s`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5792,7 +5880,7 @@ Query Params:
 string      type                          One of: 'admin', 'normal'
 
 `)
-void putOrganizationsMembers(string id, string idMember, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsOrganizationsMembers2(string id, string idMember, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5802,7 +5890,8 @@ void putOrganizationsMembers(string id, string idMember, Variable[string] queryP
 	auto url = encode(format!`%s/1/organizations/%s/members/%s`(trelloAPIURL, id, idMember));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5817,7 +5906,7 @@ string      fullName                      Name for the member, at least 1 charac
 string      type                          One of: 'admin', 'normal'
 
 `)
-void putOrganizationsMembers(string id, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsOrganizationsMembers(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5827,7 +5916,8 @@ void putOrganizationsMembers(string id, Variable[string] queryParams = (Variable
 	auto url = encode(format!`%s/1/organizations/%s/members`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5840,7 +5930,7 @@ Query Params:
 boolean     value                         
 
 `)
-void putOrganizationsMembersDeactivated(string id, string idMember, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsOrganizationsMembersDeactivated(string id, string idMember, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5850,7 +5940,8 @@ void putOrganizationsMembersDeactivated(string id, string idMember, Variable[str
 	auto url = encode(format!`%s/1/organizations/%s/members/%s/deactivated`(trelloAPIURL, id, idMember));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5859,7 +5950,7 @@ Required Params:
 string      id                            The ID or name of the organization
 
 `)
-void putPlugins(string id)
+auto putwithparamsPlugins(string id)
 {
 	import requests;
 	import std.uri : encode;
@@ -5870,7 +5961,8 @@ void putPlugins(string id)
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5887,7 +5979,7 @@ string      overview                      The overview to show for the given loc
 string      name                          The name to use for the given locale.
 
 `)
-void putPluginsListings(string idPlugin, string idListing, string description = null, string locale = null, string overview = null, string name = null)
+auto putwithparamsPluginsListings(string idPlugin, string idListing, string description = null, string locale = null, string overview = null, string name = null)
 {
 	import requests;
 	import std.uri : encode;
@@ -5898,7 +5990,8 @@ void putPluginsListings(string idPlugin, string idListing, string description = 
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5914,7 +6007,7 @@ string      callbackURL                   The URL that the webhook should POST i
 string      idModel                       ID of the object to create a webhook on.
 
 `)
-void putTokensWebhooks(string token, string webhookId, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsTokensWebhooks(string token, string webhookId, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5924,7 +6017,8 @@ void putTokensWebhooks(string token, string webhookId, Variable[string] queryPar
 	auto url = encode(format!`%s/1/tokens/%s/webhooks/%s`(trelloAPIURL, token, webhookId));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -5941,7 +6035,7 @@ boolean     active                        Determines whether the webhook is acti
                                           requests.
 
 `)
-void putWebhooks(string id, Variable[string] queryParams = (Variable[string]).init)
+auto putwithparamsWebhooks(string id, Variable[string] queryParams = (Variable[string]).init)
 {
 	import requests;
 	import std.uri : encode;
@@ -5951,7 +6045,8 @@ void putWebhooks(string id, Variable[string] queryParams = (Variable[string]).in
 	auto url = encode(format!`%s/1/webhooks/%s`(trelloAPIURL, id));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	auto result = cast(string) (newRequest().putWithParams(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
 }
 
 
@@ -6091,6 +6186,28 @@ auto tokensMember(string token, Variable[string] queryParams = (Variable[string]
 }
 
 
+@SILdoc(`Retrieve a webhook created with a token.
+Required Params:
+string      token                         
+string      idWebhook                     ID of the [Webhooks](ref:webhooks) to retrieve.
+
+`)
+auto tokensWebhooks2(string token, string idWebhook)
+{
+	import requests;
+	import std.uri : encode;
+	import std.array : array;
+	import std.format : format;
+
+	auto url = encode(format!`%s/1/tokens/%s/webhooks/%s`(trelloAPIURL, token, idWebhook));
+	Variable[string] queryParams;
+	queryParams["key"] = Variable(trelloSecret);
+	queryParams["token"] = Variable(trelloAuth);
+	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
+	return result.asVariable;
+}
+
+
 @SILdoc(`Retrieve all webhooks created with a token.
 Required Params:
 string      token                         
@@ -6112,20 +6229,21 @@ auto tokensWebhooks(string token)
 }
 
 
-@SILdoc(`Retrieve a webhook created with a token.
+@SILdoc(`Get a webhook's field.
 Required Params:
-string      token                         
-string      idWebhook                     ID of the [Webhooks](ref:webhooks) to retrieve.
+string      id                            ID of the webhook.
+string      field                         Field to retrieve. One of: 'active', 'callbackURL',
+                                          'description', 'idModel'
 
 `)
-auto tokensWebhooks(string token, string idWebhook)
+auto webhooks2(string id, string field)
 {
 	import requests;
 	import std.uri : encode;
 	import std.array : array;
 	import std.format : format;
 
-	auto url = encode(format!`%s/1/tokens/%s/webhooks/%s`(trelloAPIURL, token, idWebhook));
+	auto url = encode(format!`%s/1/webhooks/%s/%s`(trelloAPIURL, id, field));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
@@ -6147,29 +6265,6 @@ auto webhooks(string id)
 	import std.format : format;
 
 	auto url = encode(format!`%s/1/webhooks/%s`(trelloAPIURL, id));
-	Variable[string] queryParams;
-	queryParams["key"] = Variable(trelloSecret);
-	queryParams["token"] = Variable(trelloAuth);
-	auto result = cast(string) (newRequest().get(url,queryParams.queryParamMap).responseBody.array);
-	return result.asVariable;
-}
-
-
-@SILdoc(`Get a webhook's field.
-Required Params:
-string      id                            ID of the webhook.
-string      field                         Field to retrieve. One of: 'active', 'callbackURL',
-                                          'description', 'idModel'
-
-`)
-auto webhooks(string id, string field)
-{
-	import requests;
-	import std.uri : encode;
-	import std.array : array;
-	import std.format : format;
-
-	auto url = encode(format!`%s/1/webhooks/%s/%s`(trelloAPIURL, id, field));
 	Variable[string] queryParams;
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);

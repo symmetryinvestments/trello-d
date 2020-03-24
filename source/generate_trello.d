@@ -89,14 +89,26 @@ private void registerHandlerHelper(ref Handlers handlers)
 
 string generateAPI(ApiCall[] apis)
 {
-	import std.algorithm : map, filter, sort, uniq;
+	import std.algorithm : map, filter, multiSort, uniq, chunkBy;
+	import std.range : enumerate, retro;
+	import std.conv : text;
 	import std.string : join, strip;
 	import std.array : Appender, array;
 	Appender!string ret;
 
 	apis = apis.filter!(api => api.url.strip.length > 0 && !api.isBlacklisted).array;
 	// for some reason we are picking up duplicates
-	apis = apis.sort!((a,b) => (a.description.strip < b.description.strip)).uniq.array;
+	apis = apis.multiSort!((a, b) => a.description.strip < b.description.strip, (a, b) => a.url.length < b.url.length).uniq.array;
+	apis = apis.chunkBy!((a, b) => a.description.strip == b.description.strip)
+		.map!(r => r
+			  .enumerate(1)
+			  .map!((s) {
+				  s.value.description = s.index == 1 ? s.value.description : text(s.value.description, s.index);
+				  return s.value;
+			  })
+			  .array.retro/*reduces the git diff caused by the new sorting*/)
+		.join;
+
 	ret.put(CodePrelude);
 	ret.put(apis.generateRegisterHandlerHelper);
 	ret.put(apis.map!(api => api.toD).join('\n'));
@@ -104,7 +116,7 @@ string generateAPI(ApiCall[] apis)
 	return ret.data;
 }
 
-bool isBlacklisted(ApiCall api)
+bool isBlacklisted(const ApiCall api)
 {
 	import std.algorithm  :canFind;
 	import std.string : toLower;
@@ -203,12 +215,66 @@ version (Windows)
 {
 	immutable string caCertPath;
 
+	void __dummy_func() {}
+
+	auto thisModulePath()
+	{
+		import core.sys.windows.windef : HMODULE, TCHAR;
+		import core.sys.windows.winbase : GetModuleFileNameW, GetModuleHandleEx,
+			GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+			GetLastError, SetLastError;
+		import core.sys.windows.winnt : LPCWSTR;
+		import core.sys.windows.winerror : ERROR_INSUFFICIENT_BUFFER, NO_ERROR;
+		import std.exception : assumeUnique;
+		import std.windows.syserror : WindowsException;
+		import std.conv : to;
+
+		HMODULE hm = null;
+		if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
+			GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+			cast(LPCWSTR) &__dummy_func, &hm) == 0)
+		{
+			auto ret = GetLastError();
+			throw new WindowsException(ret, "GetModuleHandleEx failed",
+				__FILE__, __LINE__);
+		}
+
+		auto path = new TCHAR[](256);
+		while (true)
+		{
+			SetLastError(NO_ERROR);
+			auto pathLength = GetModuleFileNameW(hm, path.ptr, path.length.to!int);
+			if (pathLength == 0)
+			{
+				auto ret = GetLastError();
+				throw new WindowsException(ret, "GetModuleFileNameW failed",
+					__FILE__, __LINE__);
+			}
+			else if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+			{
+				path.length *= 2;
+				continue;
+			}
+			path = path[0 .. pathLength];
+			return path.assumeUnique;
+		}
+	}
+
 	shared static this()
 	{
-		import std.file : thisExePath;
-		import std.path : buildPath, dirName;
+		import std.path : dirName, buildPath;
+		import std.file : exists;
+		import std.range : only;
+		import std.conv : to;
+		import core.stdc.stdio : fputs, stderr;
 
-		caCertPath = dirName(thisExePath).buildPath("cacert.pem");
+		scope (failure)
+			fputs("Something has gone wrong setting up trello", stderr);
+
+		caCertPath = thisModulePath.dirName.to!string.buildPath("cacert.pem");
+
+		if (!caCertPath.exists)
+		    fputs(("Could not find certificates at " ~ caCertPath ~ '\0').ptr, stderr);
 	}
 
 	auto newRequest()
@@ -284,10 +350,10 @@ private void del(Request request, string uri, string[string] queryParams = (stri
 	request.exec!"DELETE"(uri);
 }
 
-private void put(Request request, string uri,string[string] queryParams = (string[string]).init)
+private auto putWithParams(Request request, string uri, string[string] queryParams = (string[string]).init)
 {
 	import asdf : serializeToJson;
-	request.exec!"PUT"(uri, serializeToJson(queryParams));
+	return request.exec!"PUT"(uri, serializeToJson(queryParams));
 }
 /+
 // requests expect content to be provided
@@ -433,7 +499,7 @@ void putMembersCustomBoardBackgrounds(string id, string idBackground, Variable[s
 	auto url = encode(format!`%s/1/members/%s//customBoardBackgrounds/%s`(trelloAPIURL, id, idBackground));
 	queryParams["key"] = Variable(trelloSecret);
 	queryParams["token"] = Variable(trelloAuth);
-	newRequest().put(url, queryParams.queryParamMap);
+	newRequest().putWithParams(url, queryParams.queryParamMap);
 }
 
 
@@ -441,7 +507,7 @@ void putMembersCustomBoardBackgrounds(string id, string idBackground, Variable[s
 
 };
 
-string toD(ApiCall call)
+string toD(const ApiCall call)
 {
 	import std.array : Appender;
 	import std.algorithm : filter;
@@ -476,7 +542,7 @@ string replaceSwaggerToken(string url)
 	return replaceSwaggerToken(url[0 .. i] ~ "%s" ~ url[i + 1 + j + 1 .. $]);
 }
 
-string generateRestCall(ApiCall call)
+string generateRestCall(const ApiCall call)
 {
 	import std.array : Appender;
 	import std.format : format;
@@ -494,12 +560,12 @@ string generateRestCall(ApiCall call)
 	return ret.data;
 }
 
-bool hasReturn(ApiCall call)
+bool hasReturn(const ApiCall call)
 {
 	return !(call.method == "del" || call.method == "put");
 }
 
-string generateUrlD(ApiCall call)
+string generateUrlD(const ApiCall call)
 {
 	import std.string : split, join;
 	import std.format : format;
@@ -529,7 +595,7 @@ string generateUrlD(ApiCall call)
 	return ret.data;
 }
 
-string prettyParams(Param[] params)
+string prettyParams(const Param[] params)
 {
 	import std.string : leftJustify, wrap, join;
 	import std.format : format;
@@ -564,7 +630,7 @@ string prettyParams(Param[] params)
 	return ret.data;
 }
 
-string getSilDocParamsHelper(string title, Param[] params)
+string getSilDocParamsHelper(string title, const Param[] params)
 {
 	import std.array : Appender;
 	Appender!string ret;
@@ -579,13 +645,13 @@ string getSilDocParamsHelper(string title, Param[] params)
 	return ret.data;
 }
 
-bool hasQueryParams(ApiCall call)
+bool hasQueryParams(const ApiCall call)
 {
 	import std.algorithm : any;
 	return call.params.any!(param => param.in_ == "query");
 }
 
-string getSilDoc(ApiCall call)
+string getSilDoc(const ApiCall call)
 {
 	import std.array : Appender, array;
 	import std.algorithm : filter;
@@ -624,7 +690,7 @@ string replaceBackTick(string s)
 	return s.replace("`", "'");
 }
 
-string getPrototype(ApiCall call)
+string getPrototype(const ApiCall call)
 {
 	import std.array : Appender, array;
 	import std.algorithm : filter, map;
@@ -661,6 +727,7 @@ struct ApiCall
 	string[] codeExamples;
 	ResultCode[] codes;
 	string[] urlArgs;
+	string description;
 
 	this(ref Asdf c)
 	{
@@ -675,7 +742,7 @@ struct ApiCall
 		swaggerPath = c["swagger"]["path"].get!string("");
 		auto el = c["api"];
 		this.url = el["url"].get!string("");
-		this.method = el["method"].get!string("").replace("delete","del");
+		this.method = el["method"].get!string("").replace("delete","del").replace("put", "putWithParams");
 		this.returnType = "";
 		this.params = el["params"].byElement.map!(p => Param(p)).array;
 
@@ -703,8 +770,9 @@ struct ApiCall
 				this.codeExamples ~= example.value.byElement.map!(e => e.get!string("")).array;
 		}
 		+/
+		this.description = createDescription();
 	}
-	string description()
+	private string createDescription()
 	{
 		import std.array : Appender;
 		import std.string : toLower, capitalize, split, replace;
@@ -727,7 +795,7 @@ struct ApiCall
 			case "/boards/{id}/customFields":
 				ret.put("customFieldDefinitionsOnBoard");
 				break;
-+/	
++/
 			case "/boards/{id}/cards":
 				ret.put("openCardsOnBoard");
 				break;
@@ -735,7 +803,7 @@ struct ApiCall
 			case "/boards/{id}/cards/{filter}":
 				ret.put("filteredCardsOnBoard");
 				break;
-			
+
 			case "/boards/{id}/cards/{cardId}":
 				ret.put("cardByID");
 				break;
