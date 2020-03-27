@@ -164,10 +164,10 @@ private void del(Request request, string uri, string[string] queryParams = (stri
 	request.exec!"DELETE"(uri);
 }
 
-private void putWithParams(Request request, string uri, string[string] queryParams = (string[string]).init)
+private auto putWithParams(Request request, string uri, string[string] queryParams = (string[string]).init)
 {
 	import asdf : serializeToJson;
-	request.exec!"PUT"(uri, serializeToJson(queryParams));
+	return request.exec!"PUT"(uri, serializeToJson(queryParams));
 }
 /+
 // requests expect content to be provided
